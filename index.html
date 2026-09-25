@@ -210,7 +210,8 @@ function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function
 // 열쇠: 처음 여는 링크(?k=...)에서 받아 이 폰에 저장해 두고, 주소창에서는 지운다
 var KEY = null;
 (function () {
-  var m = /[?&]k=([^&#]+)/.exec(location.search);
+  // #k=열쇠 (주소의 # 뒤는 서버로 전송되지 않는다)
+  var m = /[#&?]k=([^&#]+)/.exec(location.hash + '&' + location.search);
   try { if (m) localStorage.setItem('cs_key', decodeURIComponent(m[1])); KEY = localStorage.getItem('cs_key'); } catch (e) { KEY = m ? decodeURIComponent(m[1]) : null; }
   if (m) history.replaceState(null, '', location.pathname);
 })();
