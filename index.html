@@ -254,6 +254,9 @@ function loadToday() {
     h += '</div><h2>내일 입실 <span class="sub">' + d.tomorrow.length + '팀</span></h2><div class="list">';
     h += d.tomorrow.length ? d.tomorrow.map(function (b) { return row(b, '입실', 'p-in'); }).join('') : '<p class="empty">없음</p>';
     h += '</div>';
+    h += '<h2>내일 퇴실 <span class="sub">' + d.tomorrowOut.length + '팀</span></h2><div class="list">';
+    h += d.tomorrowOut.length ? d.tomorrowOut.map(function (b) { return row(b, '퇴실', 'p-out'); }).join('') : '<p class="empty">없음</p>';
+    h += '</div>';
     if (d.due.length) h += '<h2>받을 돈 <span class="sub">미입금·부분입금</span></h2><div class="list">' + d.due.map(function (b) { return row(b, b.paid, 'p-warn'); }).join('') + '</div>';
     h += '<h2>오늘 밤 빈 사이트 <span class="sub">' + d.freeTonight.length + ' / ' + d.siteCount + '</span></h2><div class="free">' + (d.freeTonight.map(function (s) { return '<span>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>';
     $('today-body').innerHTML = h;
