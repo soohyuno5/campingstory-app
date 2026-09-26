@@ -124,6 +124,16 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 .item.dim{opacity:.55}
 .detail summary{cursor:pointer;color:var(--pine);font-weight:600;font-size:12px;margin-top:2px}
 .detail .memo{margin-top:4px;white-space:pre-wrap}
+#today-body .item{cursor:pointer}
+#today-body .item:active{background:var(--tint)}
+.rchip{font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.r-cf{background:#DDF1EE;color:#1E7A6E}.r-tq{background:#FBE7D6;color:#B25A17}.r-nv{background:#DDF3DF;color:#1F8A3A}.r-self{background:var(--tint);color:var(--muted);border:1px solid var(--line)}
+table.bk{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}
+table.bk th{width:72px;text-align:left;color:var(--muted);font-weight:500;padding:5px 0;vertical-align:top}
+table.bk td{padding:5px 0}
+.bkm{margin-top:8px;font-size:12.5px;color:var(--muted)}
+.bkm summary{color:var(--pine);font-weight:600;cursor:pointer}
+.bkm div{margin-top:4px;white-space:pre-wrap;max-height:30vh;overflow:auto}
 .tel{user-select:all;color:var(--ink);font-weight:600}
 .owe{color:var(--ember);font-size:14px}
 .call{color:var(--pine);font-weight:600;text-decoration:none;white-space:nowrap}
@@ -363,8 +373,9 @@ function siteLabel(s) { s = sName(s); return /^\d/.test(s) ? s + '번' : s; }
 function isBp(s) { return /^B\d$/.test(sName(s)); }
 function badge(s) { s = sName(s); return s ? (/^(\d|B\d)/.test(s) ? '<div class="site' + (isBp(s) ? ' bp' : '') + '">' + esc(s) + '</div>' : '<div class="site k">' + esc(s) + '</div>') : '<div class="site k">부가</div>'; }
 // 한 줄 요약: [사이트] 이름 / 보조정보 · 오른쪽 짧은 글자 또는 뱃지
+var BOOKS = [];
 function item(b, meta, right, detail, tag) {
-  var h = '<div class="item">' + badge(b.site) + '<div style="min-width:0"><div class="who">' + esc(b.name) + (tag || '') + '</div><div class="meta">' + meta + '</div></div>' + (right || '');
+  var h = '<div class="item" data-b="' + (BOOKS.push(b) - 1) + '">' + badge(b.site) + '<div style="min-width:0"><div class="who">' + esc(b.name) + (tag || '') + '</div><div class="meta">' + meta + '</div></div>' + (right || '');
   if (detail) h += '<div class="detail">' + detail + '</div>';
   return h + '</div>';
 }
@@ -384,6 +395,7 @@ function pad(n) { return ('0' + n).slice(-2); }
 
 /* 오늘 */
 function loadToday() {
+  BOOKS = [];
   $('today-body').innerHTML = '<p class="loading">불러오는 중…</p>';
   call('apiToday', [], function (d) {
     var guests = d.checkin.length + d.staying.length;
@@ -466,15 +478,36 @@ function loadCal() {
   }, function (e) { errBox($('cal-body'), e); });
 }
 var CAL = null;
+function routeChip(r) {
+  var c = /캠핏/.test(r) ? 'r-cf' : /땡큐/.test(r) ? 'r-tq' : /네이버/.test(r) ? 'r-nv' : 'r-self';
+  return r ? '<span class="rchip ' + c + '">' + esc(r) + '</span>' : '';
+}
+function showBooking(x, site) {
+  var won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; };
+  var rows = [
+    ['경로', routeChip(x.route) || '-'],
+    ['기간', esc(x.period) + (x.nights ? ' · ' + x.nights + '박' : '') + (x.long ? ' · 장박' : '')],
+    ['인원', esc(x.people || '-')],
+    ['전화', x.tel ? telLink(x) : esc(x.tel4 ? '끝 ' + x.tel4 : '-')],
+    ['금액', x.pay ? won(x.pay) + (x.method ? ' · ' + esc(x.method) : '') : '-'],
+    ['입금', x.paid ? (x.paid === '입금완료' ? esc(x.paid) : '<span class="mini p-warn">' + esc(x.paid) + '</span>') : '-'],
+    ['예약번호', esc(x.no || '-')]
+  ];
+  $('sheet-b').innerHTML = '<h4>' + esc(siteLabel(site || x.site)) + ' · ' + esc(x.name) + '</h4>' +
+    '<table class="bk">' + rows.map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table>' +
+    (x.memo ? '<details class="bkm"><summary>메모 보기</summary><div>' + esc(x.memo) + '</div></details>' : '') +
+    '<p style="margin-top:12px"><button class="btn" id="sheet-x">닫기</button></p>';
+  $('sheet').hidden = false;
+}
+$('today-body').addEventListener('click', function (e) {
+  if (e.target.closest('a')) return;  // 전화번호 누르면 전화만
+  var it = e.target.closest('.item[data-b]'); if (it) showBooking(BOOKS[+it.dataset.b]);
+});
 // 막대를 누르면 예약 상세
 $('cal-body').addEventListener('click', function (e) {
   var b = e.target.closest('.bar'); if (!b || !CAL) return;
   var g = CAL.grid[+b.dataset.g], x = g.cells[+b.dataset.i];
-  $('sheet-b').innerHTML = '<h4>' + esc(siteLabel(g.site)) + ' · ' + esc(x.name) + (x.long ? ' <span class="mini p-long">장박</span>' : '') + '</h4>' +
-    '<p>' + esc(x.period) + ' · ' + x.nights + '박' + (x.people ? ' · ' + esc(x.people) : '') + '</p>' +
-    (x.tel ? '<p>' + telLink(x) + '</p>' : '') + (x.paid ? '<p class="sub">입금 ' + esc(x.paid) + '</p>' : '') +
-    '<p style="margin-top:12px"><button class="btn" id="sheet-x">닫기</button></p>';
-  $('sheet').hidden = false;
+  showBooking(x, g.site);
 });
 $('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' || e.target.id === 'sheet-x') $('sheet').hidden = true; });
 
