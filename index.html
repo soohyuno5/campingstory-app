@@ -32,6 +32,7 @@ var LOGO_H = 'logo.jpg', SYMBOL = 'symbol.jpg';
   --in:#86D19F; --in-bg:#1C3424; --out:#F1A08B; --out-bg:#3A221C; --stay:#98BEE0; --stay-bg:#1C2A37; --long:#C9AEEA; --long-bg:#2C2338;}}
 *{box-sizing:border-box}
 html,body{margin:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent}
 button{font:inherit;cursor:pointer;color:inherit}
 input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--moss);outline-offset:2px}
@@ -63,6 +64,7 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 
 /* 카드 */
 .grid{display:grid;gap:8px;align-items:start}
+.grid>*,.pair>*{min-width:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 14px 8px;border-bottom:1px solid var(--line)}
 .card-h h3{margin:0;font-size:16px;font-weight:700}
@@ -91,7 +93,7 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 .day b{font-size:14px}.day .lo{color:var(--muted);font-size:12px}
 .day .r{color:var(--muted);font-size:11px}.day .hot{color:var(--ember);font-weight:700;font-size:11px}
 /* 촘촘한 줄 */
-.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:6px 8px;border-radius:12px}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 8px;border-radius:12px}
 .item + .item{border-top:1px solid var(--line);border-radius:0}
 .site{min-width:38px;height:38px;padding:0 5px;border-radius:10px;background:var(--sage);color:var(--pine);display:grid;place-items:center;font-family:var(--num);font-size:15px;line-height:1}
 .site.bp,.cal td.s b.bp,.free span.bp{background:#EADFC8;color:#7A5A2E}
@@ -99,8 +101,9 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 @media (prefers-color-scheme:dark){.site.bp,.cal td.s b.bp,.free span.bp{background:#3E3526;color:#E3C48F}}
 .site.k{font-family:var(--sans);font-weight:700;font-size:11.5px}
 .who{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.meta{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
-.right{font-size:12.5px;color:var(--muted);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.meta{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.right{font-size:12.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:2px 4px;max-width:62%}
+.right>*{white-space:nowrap}
 /* 오늘 입실·퇴실 나란히 */
 .pair{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;grid-column:1/-1;align-items:start}
 /* 카드는 가로로 꽉, 안의 손님은 폭에 맞춰 2~4열로 흐름 → 많든 적든 빈 공간 없음 */
@@ -279,14 +282,16 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
   .ph{margin:22px 0 16px}
   h1{font-size:34px}
   .chatbar{bottom:0}
-  .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid.three{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
   .grid.g2{column-count:3}
-  .pair{grid-column:span 2;gap:12px}
+  .pair{grid-column:1/-1;gap:12px}
   .pair .card-h{padding:14px 16px 12px}.pair .card-h .sub{display:block}.pair .card-b{padding:6px 8px}
   .kpis{gap:10px}
   .kpi{padding:10px 6px;display:grid;align-content:center}
   .kpi b{font-size:30px}.kpi span{font-size:13px}
 }
+/* 아주 넓은 화면(PC 전체화면)에서만 3열, 입실·퇴실 묶음은 2칸 */
+@media (min-width:1400px){.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.pair{grid-column:span 2}}
 </style>
 </head>
 <body>
@@ -576,7 +581,7 @@ function showBooking(x, site) {
     '<table class="bk">' + rows.map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table>' +
     (x.memo ? '<details class="bkm"><summary>메모 보기</summary><div>' + esc(x.memo) + '</div></details>' : '') +
     '<p style="margin-top:12px"><button class="btn" id="sheet-x">닫기</button></p>';
-  $('sheet').hidden = false;
+  openSheet();
 }
 $('today-body').addEventListener('click', function (e) {
   if (e.target.closest('#st-more')) { show('store'); return; }
@@ -589,7 +594,9 @@ $('cal-body').addEventListener('click', function (e) {
   var g = CAL.grid[+b.dataset.g], x = g.cells[+b.dataset.i];
   showBooking(x, g.site);
 });
-$('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' || e.target.id === 'sheet-x') $('sheet').hidden = true; });
+function openSheet() { if ($('sheet').hidden) history.pushState({ v: CUR, sheet: 1 }, ''); $('sheet').hidden = false; }
+function closeSheet() { if (history.state && history.state.sheet) history.back(); else $('sheet').hidden = true; }
+$('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' || e.target.id === 'sheet-x') closeSheet(); });
 
 /* 기간조회 */
 function pYmd(v) { var p = String(v || '').split('-'); return p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : null; }
@@ -701,6 +708,7 @@ function loadSchedule() {
 $('sched-all').addEventListener('click', function () { openDoc('캠핑장 일정표', '캠핑장 일정표', ''); });
 
 function openDoc(id, name, q) {
+  history.pushState({ v: 'info', doc: 1 }, '');
   $('info-list').hidden = true; $('dsearch').hidden = true; $('sched').hidden = true; $('info-doc').hidden = false; $('doc-body').innerHTML = '<p class="loading">불러오는 중…</p>'; scrollTo(0, 0);
   $('doc-name').textContent = name;
   call('apiDoc', [id], function (d) {
@@ -712,9 +720,8 @@ function openDoc(id, name, q) {
 $('info-list').addEventListener('click', function (e) {
   var b = e.target.closest('.doc'); if (b) openDoc(b.dataset.id, b.textContent, '');
 });
-$('doc-back').addEventListener('click', function () {
-  $('info-doc').hidden = true; $('dsearch').hidden = false; $('sched').hidden = false; $('info-list').hidden = !!$('dq').value.trim();
-});
+function closeDoc() { $('info-doc').hidden = true; $('dsearch').hidden = false; $('sched').hidden = false; $('info-list').hidden = !!$('dq').value.trim(); }
+$('doc-back').addEventListener('click', function () { if (history.state && history.state.doc) history.back(); else closeDoc(); });
 function words(q) { return String(q || '').trim().split(/\s+/).filter(Boolean); }
 function hl(text, q) {
   var h = esc(text);
@@ -828,7 +835,10 @@ $('chatform').addEventListener('submit', function (e) { e.preventDefault(); ask(
 /* 탭 */
 var views = ['today', 'cal', 'store', 'info', 'ask'], loaded = { today: true };
 var TITLES = { today: '오늘 현황', cal: '사이트 달력', store: '매점', info: '캠핑장 정보', ask: '물어보기' };
-function show(v) {
+var CUR = 'today';
+function show(v, fromBack) {
+  if (!fromBack && v !== CUR) history.pushState({ v: v }, '');
+  CUR = v;
   views.forEach(function (x) { $('v-' + x).hidden = x !== v; });
   $('ptitle').textContent = v === 'today' ? DATE_TXT : TITLES[v]; $('peye').hidden = v === 'today'; $('week').hidden = $('kpis').hidden = v !== 'today';
   document.querySelectorAll('nav .tab').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.v === v); });
@@ -838,7 +848,15 @@ function show(v) {
   if (!loaded[v]) { loaded[v] = true; if (v === 'info') { loadDocs(); loadSchedule(); } }
 }
 document.querySelector('nav').addEventListener('click', function (e) { var b = e.target.closest('.tab'); if (b) show(b.dataset.v); });
-show('today'); loadToday();
+history.replaceState({ v: 'today' }, '');
+// 폰 뒤로가기: 열린 창 닫기 → 문서 닫기 → 이전 탭. 첫 화면(오늘)에서 누르면 그때 앱 종료.
+window.addEventListener('popstate', function (e) {
+  var st = e.state || { v: 'today' };
+  if (!$('sheet').hidden && !st.sheet) { $('sheet').hidden = true; }
+  if (!$('info-doc').hidden && !st.doc) closeDoc();
+  if (st.v && st.v !== CUR) show(st.v, true);
+});
+show('today', true); loadToday();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
 </script>
 </body>
