@@ -134,6 +134,17 @@ table.bk td{padding:5px 0}
 .bkm{margin-top:8px;font-size:12.5px;color:var(--muted)}
 .bkm summary{color:var(--pine);font-weight:600;cursor:pointer}
 .bkm div{margin-top:4px;white-space:pre-wrap;max-height:30vh;overflow:auto}
+.st-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:8px 8px 4px}
+.st-sum{font-family:var(--num);font-weight:400;font-size:24px;color:var(--pine)}
+.st-line{font-size:12.5px;padding:3px 8px;color:var(--ink)}
+.st-more{display:block;width:100%;text-align:left;background:var(--tint);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:6px 0 2px;font-size:13px;font-weight:600;color:var(--pine)}
+.st-upd{font-size:11px;color:var(--muted);text-align:right;padding:2px 8px 4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:4px}
+.seg button{border:0;background:var(--surface);padding:6px 12px;font-size:13px}.seg button.on{background:var(--sage);font-weight:700;color:var(--pine)}
+.mbars{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;align-items:end;height:110px}
+.mb{display:grid;justify-items:center;align-content:end;gap:2px}
+.mb i{display:block;width:100%;max-width:18px;background:var(--moss);border-radius:4px 4px 0 0;min-height:1px}
+.mb .mv{font-size:9.5px;color:var(--muted)}.mb .ml{font-size:10px;color:var(--muted)}
 .tel{user-select:all;color:var(--ink);font-weight:600}
 .owe{color:var(--ember);font-size:14px}
 .call{color:var(--pine);font-weight:600;text-decoration:none;white-space:nowrap}
@@ -367,7 +378,7 @@ var KEY = null;
   try { if (m) localStorage.setItem('cs_key', decodeURIComponent(m[1])); KEY = localStorage.getItem('cs_key'); } catch (e) { KEY = m ? decodeURIComponent(m[1]) : null; }
   if (m) history.replaceState(null, '', location.pathname);
 })();
-var API_FN = { apiToday: 'today', apiCalendar: 'calendar', apiRange: 'range', apiSearch: 'search', apiDocs: 'docs', apiDoc: 'doc', apiDocSearch: 'docsearch', apiAsk: 'ask' };
+var API_FN = { apiToday: 'today', apiCalendar: 'calendar', apiRange: 'range', apiSearch: 'search', apiDocs: 'docs', apiDoc: 'doc', apiDocSearch: 'docsearch', apiStore: 'store', apiAsk: 'ask' };
 function call(fn, args, ok, fail) {
   if (!KEY) return fail('가족 전용 링크로 처음 한 번 열어 주세요. (행님께 링크를 받아 주세요)');
   var url = API_URL + '?fn=' + API_FN[fn] + '&k=' + encodeURIComponent(KEY) + '&a=' + encodeURIComponent(JSON.stringify(args || []));
@@ -433,7 +444,8 @@ function loadToday() {
       }).join('')) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>');
-    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cFree + '</div>';
+    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + '<div class="card" id="c-store"><div class="card-h"><div><h3>오늘 매점</h3></div><span class="tag">토스</span></div><div class="card-b"><p class="loading" style="padding:8px">불러오는 중…</p></div></div>' + cDue + cFree + '</div>';
+    loadStore();
     var t = new Date(); $('updated').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 기준';
     $('navfoot').textContent = '마지막 새로고침 ' + pad(t.getHours()) + ':' + pad(t.getMinutes());
   }, function (e) { errBox($('today-body'), e); });
@@ -489,6 +501,41 @@ function loadCal() {
   }, function (e) { errBox($('cal-body'), e); });
 }
 var CAL = null;
+/* 매점 (토스): 집 PC가 30분마다 시트에 적은 요약 */
+var STORE = null;
+function won(n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }
+function loadStore() {
+  call('apiStore', [], function (d) {
+    STORE = d; var t = d.today || {}, m = (d.monthly || []).slice(-1)[0] || {};
+    var box = $('c-store'); if (!box) return;
+    box.querySelector('.tag').textContent = (t.storeCount || 0) + '건';
+    var meth = Object.keys(t.methods || {}).map(function (k) { return '<span class="mini p-stay">' + esc(k) + ' ' + won(t.methods[k]) + '</span>'; }).join(' ');
+    box.querySelector('.card-b').innerHTML =
+      '<div class="st-top"><b class="st-sum">' + won(t.store) + '</b>' + (meth ? '<span>' + meth + '</span>' : '<span class="sub">아직 판매 없음</span>') + '</div>' +
+      (t.site ? '<div class="st-line">프론트 금액 입력(사이트 결제 등) ' + won(t.site) + ' · ' + t.siteCount + '건 <span class="sub">— 매점과 따로</span></div>' : '') +
+      '<button class="st-more" id="st-more">이번 달 매점 ' + won(m.store) + ' · 잘 팔리는 품목·월별 보기 ›</button>' +
+      '<div class="st-upd">토스 기준 ' + esc((d.updated || '').slice(5)) + '</div>';
+  }, function (e) { var box = $('c-store'); if (box) box.querySelector('.card-b').innerHTML = '<p class="empty">' + esc(e) + '</p>'; });
+}
+function storeSheet(which) {
+  var d = STORE; if (!d) return;
+  var top = (which === 'month' ? d.month : d.week).top || [];
+  var mx = Math.max.apply(null, (d.monthly || []).map(function (x) { return x.store; }).concat([1]));
+  var bars = (d.monthly || []).map(function (x) {
+    var h = Math.round(x.store / mx * 70);
+    return '<div class="mb"><span class="mv">' + (x.store ? Math.round(x.store / 1000) + 'k' : '') + '</span><i style="height:' + h + 'px"></i><span class="ml">' + (+x.ym.slice(5)) + '월</span></div>';
+  }).join('');
+  $('sheet-b').innerHTML = '<h4>매점 매출</h4>' +
+    '<div class="seg"><button data-w="week"' + (which !== 'month' ? ' class="on"' : '') + '>최근 7일</button><button data-w="month"' + (which === 'month' ? ' class="on"' : '') + '>이번 달</button></div>' +
+    '<div class="sub" style="margin:8px 0 4px">잘 팔리는 품목 TOP 5</div>' +
+    (top.length ? '<table class="bk">' + top.map(function (r, i) { return '<tr><th>' + (i + 1) + '. ' + esc(r.name) + '</th><td style="text-align:right">' + r.qty + '개 · ' + won(r.amount) + '</td></tr>'; }).join('') + '</table>' : '<p class="empty">판매 기록이 없어요</p>') +
+    '<div class="sub" style="margin:14px 0 4px">월별 매점 매출 (최근 12개월)</div><div class="mbars">' + bars + '</div>' +
+    '<div class="sub" style="margin:12px 0 4px">최근 판매</div>' +
+    (d.recent || []).slice(0, 6).map(function (r) { return '<div class="st-line">' + esc(r.at) + ' · ' + esc(r.items) + ' <b>' + won(r.amount) + '</b></div>'; }).join('') +
+    '<p style="margin-top:12px"><button class="btn" id="sheet-x">닫기</button></p>';
+  $('sheet').hidden = false;
+}
+$('sheet').addEventListener('click', function (e) { var b = e.target.closest('.seg button'); if (b) storeSheet(b.dataset.w); });
 function routeChip(r) {
   var c = /캠핏/.test(r) ? 'r-cf' : /땡큐/.test(r) ? 'r-tq' : /네이버/.test(r) ? 'r-nv' : 'r-self';
   return r ? '<span class="rchip ' + c + '">' + esc(r) + '</span>' : '';
@@ -511,6 +558,7 @@ function showBooking(x, site) {
   $('sheet').hidden = false;
 }
 $('today-body').addEventListener('click', function (e) {
+  if (e.target.closest('#st-more')) { storeSheet('week'); return; }
   if (e.target.closest('a')) return;  // 전화번호 누르면 전화만
   var it = e.target.closest('.item[data-b]'); if (it) showBooking(BOOKS[+it.dataset.b]);
 });
