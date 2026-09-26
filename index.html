@@ -195,14 +195,22 @@ table.bk td{padding:5px 0}
 .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--muted)}
 
 /* 정보 */
-.docs .doc{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:9px 4px;color:var(--ink);font-weight:500;font-size:13.5px;line-height:1.35}
-.grid.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.sch{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:8px 8px;border-top:1px solid var(--line)}
+.docs .doc{display:flex;justify-content:space-between;align-items:center;gap:6px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:7px 4px;color:var(--ink);font-weight:500;font-size:13.5px;line-height:1.35}
+/* 정보 탭 분류 카드: 높이가 달라도 빈틈 없이 위에서부터 채움 */
+.grid.g2{display:block;column-count:2;column-gap:8px}
+.grid.g2>.card{break-inside:avoid;margin-bottom:8px;display:inline-block;width:100%}
+#info-list .card-h{padding:8px 10px 6px}
+#info-list .card-h h3{font-size:14.5px}
+#info-list .card-b{padding:0 6px 2px}
+.sch{display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:center;padding:5px 8px;border-top:1px solid var(--line)}
 .sch:first-child{border-top:0}
 .sch .dd{font-family:var(--num);font-size:13px;text-align:center;padding:4px 0;border-radius:9px;background:var(--tint);color:var(--muted)}
 .sch .dd.soon{background:var(--ember-bg);color:var(--ember)}.sch .dd.over{background:var(--out-bg);color:var(--out)}
-.sch b{font-size:14px;font-weight:600;display:block;line-height:1.35}
+.sch b{font-size:13.5px;font-weight:600;display:block;line-height:1.3}
 .sch .when{font-size:12px;color:var(--muted)}
+#sched .card-h{padding:8px 10px 6px}
+#sched .card-h .sub{display:none}
+#sched .card-b{padding:2px 4px}
 .sch-note{font-size:12px;color:var(--muted);padding:6px 8px 8px;border-top:1px dashed var(--line)}
 .hit{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 8px;color:var(--ink)}
 .hit b{font-size:14px}.hit .sub{margin-left:6px}
@@ -271,7 +279,8 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
   .ph{margin:22px 0 16px}
   h1{font-size:34px}
   .chatbar{bottom:0}
-  .grid.three,.grid.g2{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid.g2{column-count:3}
   .pair{grid-column:span 2;gap:12px}
   .pair .card-h{padding:14px 16px 12px}.pair .card-h .sub{display:block}.pair .card-b{padding:6px 8px}
   .kpis{gap:10px}
@@ -448,8 +457,7 @@ function loadToday() {
       }).join('')) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>');
-    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + '<div class="card" id="c-store"><div class="card-h"><div><h3>오늘 매점</h3></div><span class="tag">토스</span></div><div class="card-b"><p class="loading" style="padding:8px">불러오는 중…</p></div></div>' + cDue + cFree + '</div>';
-    loadStore();
+    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cFree + '</div>';
     var t = new Date(); $('updated').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 기준';
     $('navfoot').textContent = '마지막 새로고침 ' + pad(t.getHours()) + ':' + pad(t.getMinutes());
   }, function (e) { errBox($('today-body'), e); });
@@ -686,9 +694,8 @@ function loadSchedule() {
         (x.dt.getFullYear() !== now.getFullYear() ? x.dt.getFullYear() + '. ' : '') + (x.dt.getMonth() + 1) + '/' + x.dt.getDate() + '(' + '일월화수목금토'[x.dt.getDay()] + ')' +
         (x.rep !== '없음' ? ' · ' + esc(x.rep) : '') + '</span></div><span class="mini p-stay">' + esc(x.cat) + '</span></div>';
     }).join('') || '<p class="empty">등록된 일정이 없어요.</p>') +
-      unknown.map(function (u) {
-        return '<div class="sch"><span class="dd over">?</span><div><b>' + esc(u[0]) + '</b><span class="when">' + esc((u[1] || '날짜 확인 필요').slice(0, 60)) + '</span></div><span class="mini p-warn">날짜 미정</span></div>';
-      }).join('');
+      (unknown.length ? '<div class="sch"><span class="dd over">?</span><div><b>날짜 미정 ' + unknown.length + '개</b><span class="when">' +
+        unknown.map(function (u) { return esc(u[0].replace(/\(.*?\)/g, '').trim()); }).join(' · ') + '</span></div><span class="mini p-warn">확인 필요</span></div>' : '');
   }, function (e) { errBox($('sched-b'), e); });
 }
 $('sched-all').addEventListener('click', function () { openDoc('캠핑장 일정표', '캠핑장 일정표', ''); });
