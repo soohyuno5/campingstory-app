@@ -1,5 +1,5 @@
 // 캠핑스토리 앱 껍데기(화면·아이콘)만 저장. 예약 데이터는 항상 서버에서 새로 받는다.
-var CACHE = 'cs-shell-v2';
+var CACHE = 'cs-shell-v3';
 var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'logo.jpg', 'symbol.jpg', 'icon-192.png', 'icon-512.png', 'favicon.png'];
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); })); self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
