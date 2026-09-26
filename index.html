@@ -574,7 +574,7 @@ $('q').addEventListener('input', function () {
 /* 정보 */
 function loadDocs() {
   call('apiDocs', [], function (docs) {
-    var order = ['요금·규정', '사이트·시설', '고객 응대', '안전·유지보수', '돈 관리', '예약 운영', '기타'];
+    var order = ['요금·규정', '매점', '사이트·시설', '고객 응대', '안전·유지보수', '돈 관리', '예약 운영', '기타'];
     var by = {}; docs.forEach(function (d) { (by[d.category] = by[d.category] || []).push(d); });
     var cats = order.filter(function (c) { return by[c]; }).concat(Object.keys(by).filter(function (c) { return order.indexOf(c) < 0; }));
     var h = '<div class="grid g2">';
