@@ -464,11 +464,11 @@ function loadToday() {
     var owed = d.due.reduce(function (t, b) { return t + (b.owe || 0); }, 0);
     var cDue = d.due.length ? card('c-due', '받을 돈', '합계 ' + won(owed) + ' · 입금완료 전', d.due.length + '건', 'warn',
       d.due.map(function (b) {
-        // 오른쪽 빈칸에 금액: 남은 돈(굵게) / 전체(나눠 받는 중일 때) / 입금상태 뱃지를 세로로 좁게
+        // 오른쪽 칸 없이 왼쪽부터 붙여서: 이름 [뱃지] / 기간·장박 / 남은 돈 / 전체 → 넓은 화면에서도 가운데 빈칸 없음
         var meta = esc(b.period) + (b.long && b.weeks ? ' · 장박 ' + b.weeks + '주·' + b.usage + '박' : b.long ? ' · 장박' : '') +
+          '<br><b class="owe">' + won(b.owe) + '</b>' + (b.got ? ' <span class="of">/ ' + won(b.pay) + '</span>' : '') +
           (telLink(b) ? '<br>' + telLink(b) : '');
-        return item(b, meta, '<span class="dueR"><b class="owe">' + won(b.owe) + '</b>' + (b.got ? '<span class="of">/ ' + won(b.pay) + '</span>' : '') +
-          '<span class="pill p-warn">' + esc(b.paid) + '</span></span>');
+        return item(b, meta, '', '', ' <span class="mini p-warn">' + esc(b.paid) + '</span>');
       }).join('')) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>');
