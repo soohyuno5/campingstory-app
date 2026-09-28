@@ -108,7 +108,10 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 .pair{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;grid-column:1/-1;align-items:start}
 /* 카드는 가로로 꽉, 안의 손님은 폭에 맞춰 2~4열로 흐름 → 많든 적든 빈 공간 없음 */
 .pair .card-b{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));column-gap:10px}
-.pair .item,.pair .item + .item{border-top:0;border-radius:0;border-bottom:1px dashed var(--line)}
+.pair .item,.pair .item + .item{border-top:0;border-radius:0;border-bottom:0}
+/* 0팀인 카드는 제목 줄만 */
+.card.nil .card-b{display:none}
+.card.nil .card-h{padding-bottom:10px}
 .pair .card-h{padding:11px 10px 9px;align-items:center}
 .pair .card-h h3{font-size:15px}
 .pair .card-h .sub{display:none}
@@ -435,7 +438,7 @@ function bits(b, withPeriod) {
 function short(b) { return [stayLen(b), esc(b.people || '')].filter(Boolean).join(' · ') + (telLink(b) ? '<br>' + telLink(b) : ''); }
 function endOf(b) { var p = String(b.period || '').split('~'); return p[1] ? '~' + esc(p[1]) : ''; }
 function card(id, title, sub, tag, tagCls, body) {
-  return '<div class="card" id="' + id + '"><div class="card-h"><div><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span></div><div class="card-b">' + body + '</div></div>';
+  return '<div class="card' + (body === '<p class="empty">없어요</p>' ? ' nil' : '') + '" id="' + id + '"><div class="card-h"><div><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span></div><div class="card-b">' + body + '</div></div>';
 }
 var now = new Date();
 var DATE_TXT = (now.getMonth() + 1) + '월 ' + now.getDate() + '일(' + '일월화수목금토'[now.getDay()] + ')';
