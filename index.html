@@ -187,6 +187,9 @@ table.bk td{padding:5px 0}
 .bar.l{background:var(--long-bg);color:var(--long)}
 .bar.st{border-radius:8px 0 0 8px;margin-left:3px}.bar.en{border-radius:0 8px 8px 0;margin-right:3px}.bar.st.en{border-radius:8px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.recent-line{display:block;width:100%;text-align:left;border:0;border-top:1px solid var(--line);background:none;padding:8px 12px;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-list .item{cursor:pointer}
+.mini-r{font-size:10.5px;padding:1px 6px}
 .rq-btn{flex:1;text-align:left;font:inherit;font-size:15px;font-weight:600;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--tint);color:var(--ink)}
 .pk-nav{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:6px 0}
 .pk-m{margin-top:8px}.pk-t{font-weight:700;margin:4px 2px}
@@ -342,6 +345,7 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
     <div class="card-b" style="padding:8px 10px"><div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>
       <input type="search" id="q" placeholder="예약 찾기 · 이름, 전화 끝 4자리, 사이트" autocomplete="off" aria-label="예약 검색"></div></div>
     <div class="card-b" id="results" hidden style="border-top:1px solid var(--line)"></div>
+    <button class="recent-line" id="recent-line" hidden></button>
   </div>
   <div id="today-body"><p class="loading">불러오는 중…</p></div>
   <p class="note"><button class="btn" id="reload">새로고침</button><span id="updated"></span></p>
@@ -456,6 +460,7 @@ var DATE_TXT = (now.getMonth() + 1) + '월 ' + now.getDate() + '일(' + '일월�
 function pad(n) { return ('0' + n).slice(-2); }
 
 /* 오늘 */
+var RECENT = [];
 function loadToday() {
   BOOKS = [];
   $('today-body').innerHTML = '<p class="loading">불러오는 중…</p>';
@@ -487,6 +492,10 @@ function loadToday() {
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>');
     $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cFree + '</div>';
+    RECENT = d.recent || [];
+    var r0 = RECENT[0];
+    $('recent-line').hidden = !r0;
+    if (r0) $('recent-line').innerHTML = '🆕 <b>최근 등록</b> · ' + esc(bookedTxt(r0.booked)) + ' ' + esc(siteLabel(r0.site)) + ' ' + esc(r0.name) + (r0.cancelled ? ' (취소)' : '') + ' <span class="sub">외 ' + (RECENT.length - 1) + '건 ›</span>';
     var t = new Date(); $('updated').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 기준';
     $('navfoot').textContent = '마지막 새로고침 ' + pad(t.getHours()) + ':' + pad(t.getMinutes());
   }, function (e) { errBox($('today-body'), e); });
@@ -542,6 +551,18 @@ function loadCal() {
   }, function (e) { errBox($('cal-body'), e); });
 }
 var CAL = null;
+/* 최근 등록: 원장 Q열 예약신청일 기준 (숙박일 아님) */
+function bookedTxt(v) { var m = /^\d{4}-(\d{2})-(\d{2})(?:\s+(\d{1,2}:\d{2}))?/.exec(v || ''); return m ? (+m[1]) + '/' + (+m[2]) + (m[3] ? ' ' + m[3] : '') : v; }
+function showRecent() {
+  $('sheet-b').innerHTML = '<h4>최근 등록 <span class="sub">예약 들어온 순서</span></h4><div class="recent-list">' +
+    RECENT.map(function (b) {
+      var tag = b.cancelled ? '<span class="mini p-out">취소</span>' : b.route ? ' ' + routeChip(b.route).replace('rchip', 'rchip mini-r') : '';
+      return item(b, esc(bookedTxt(b.booked)) + ' 신청 · ' + esc(b.period) + (b.nights ? ' · ' + stayLen(b) : ''), '', '', ' ' + tag);
+    }).join('') + '</div><p class="sub" style="margin:8px 0 0">날짜만 있는 건 예전 기록이라 시각이 없어요.</p>' +
+    '<p style="margin-top:10px"><button class="btn" id="sheet-x">닫기</button></p>';
+  openSheet();
+}
+$('recent-line').addEventListener('click', showRecent);
 /* 매점 (토스): 집 PC가 30분마다 시트에 적은 요약 */
 var STORE = null;
 function won(n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }
@@ -660,6 +681,8 @@ $('rq-btn').addEventListener('click', function () {
   drawPicker(); openSheet();
 });
 $('sheet-b').addEventListener('click', function (e) {
+  var rb = e.target.closest('.recent-list .item[data-b]');
+  if (rb && !e.target.closest('a')) { showBooking(BOOKS[+rb.dataset.b]); return; }
   var mv = e.target.closest('[data-mv]');
   if (mv) { PK.m = new Date(PK.m.getFullYear(), PK.m.getMonth() + (+mv.dataset.mv), 1); drawPicker(); return; }
   var c = e.target.closest('.pk-d'); if (!c) return;
