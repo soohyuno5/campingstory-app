@@ -153,6 +153,7 @@ table.bk td{padding:5px 0}
 .mb i{display:block;width:100%;max-width:18px;background:var(--moss);border-radius:4px 4px 0 0;min-height:1px}
 .mb .mv{font-size:9.5px;color:var(--muted)}.mb .ml{font-size:10px;color:var(--muted)}
 .gotline{color:var(--in);font-weight:600}
+.of{font-size:12px;color:var(--muted)}
 .tel{user-select:all;color:var(--ink);font-weight:600}
 .owe{color:var(--ember);font-size:14px}
 .call{color:var(--pine);font-weight:600;text-decoration:none;white-space:nowrap}
@@ -461,10 +462,11 @@ function loadToday() {
     var owed = d.due.reduce(function (t, b) { return t + (b.owe || 0); }, 0);
     var cDue = d.due.length ? card('c-due', '받을 돈', '합계 ' + won(owed) + ' · 입금완료 전', d.due.length + '건', 'warn',
       d.due.map(function (b) {
+        // 금액은 기간 밑 줄에 (나눠 받는 중이면 '남은 돈 / 전체'), 오른쪽엔 입금상태 뱃지만 → 이름·금액 사이 빈 공간 없앰
         var meta = esc(b.period) + (b.long && b.weeks ? ' · 장박 ' + b.weeks + '주·' + b.usage + '박' : b.long ? ' · 장박' : '') +
-          (b.got ? '<br><span class="gotline">' + won(b.pay) + ' 중 ' + won(b.got) + ' 입금</span>' : '') + (telLink(b) ? '<br>' + telLink(b) : '');
-        var amt = '<b class="owe">' + won(b.owe) + '</b> <span class="pill p-warn">' + esc(b.paid) + '</span>';
-        return item(b, meta, '<span class="right">' + amt + '</span>');
+          '<br><b class="owe">' + won(b.owe) + '</b>' + (b.got ? ' <span class="of">/ ' + won(b.pay) + '</span>' : '') +
+          (telLink(b) ? '<br>' + telLink(b) : '');
+        return item(b, meta, '<span class="pill p-warn">' + esc(b.paid) + '</span>');
       }).join('')) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>');
