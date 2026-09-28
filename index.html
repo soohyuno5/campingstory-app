@@ -152,6 +152,7 @@ table.bk td{padding:5px 0}
 .mb{display:grid;justify-items:center;align-content:end;gap:2px}
 .mb i{display:block;width:100%;max-width:18px;background:var(--moss);border-radius:4px 4px 0 0;min-height:1px}
 .mb .mv{font-size:9.5px;color:var(--muted)}.mb .ml{font-size:10px;color:var(--muted)}
+.gotline{color:var(--in);font-weight:600}
 .tel{user-select:all;color:var(--ink);font-weight:600}
 .owe{color:var(--ember);font-size:14px}
 .call{color:var(--pine);font-weight:600;text-decoration:none;white-space:nowrap}
@@ -420,10 +421,14 @@ function item(b, meta, right, detail, tag) {
   return h + '</div>';
 }
 function telLink(b) { if (b.tel) return '<a class="call" href="tel:' + esc(String(b.tel).replace(/[^\d+]/g, '')) + '">' + esc(b.tel) + '</a>'; return b.tel4 ? '☎' + esc(b.tel4) : ''; }
-function bits(b, withPeriod) {
-  return [withPeriod ? esc(b.period) : '', b.nights ? b.nights + '박' : '', esc(b.people || '')].filter(Boolean).join(' · ') + (telLink(b) ? '<br>' + telLink(b) : '');
+function stayLen(b) {
+  if (b.long && b.weeks) return '장박 ' + b.weeks + '주·' + b.usage + '박' + (b.used ? ' (' + b.used + '박 이용)' : '');
+  return b.nights ? b.nights + '박' : '';
 }
-function short(b) { return [b.nights ? b.nights + '박' : '', esc(b.people || '')].filter(Boolean).join(' · ') + (telLink(b) ? '<br>' + telLink(b) : ''); }
+function bits(b, withPeriod) {
+  return [withPeriod ? esc(b.period) : '', stayLen(b), esc(b.people || '')].filter(Boolean).join(' · ') + (telLink(b) ? '<br>' + telLink(b) : '');
+}
+function short(b) { return [stayLen(b), esc(b.people || '')].filter(Boolean).join(' · ') + (telLink(b) ? '<br>' + telLink(b) : ''); }
 function endOf(b) { var p = String(b.period || '').split('~'); return p[1] ? '~' + esc(p[1]) : ''; }
 function card(id, title, sub, tag, tagCls, body) {
   return '<div class="card" id="' + id + '"><div class="card-h"><div><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span></div><div class="card-b">' + body + '</div></div>';
@@ -456,7 +461,8 @@ function loadToday() {
     var owed = d.due.reduce(function (t, b) { return t + (b.owe || 0); }, 0);
     var cDue = d.due.length ? card('c-due', '받을 돈', '합계 ' + won(owed) + ' · 입금완료 전', d.due.length + '건', 'warn',
       d.due.map(function (b) {
-        var meta = esc(b.period) + (b.long ? ' · 장박' : '') + (telLink(b) ? '<br>' + telLink(b) : '');
+        var meta = esc(b.period) + (b.long && b.weeks ? ' · 장박 ' + b.weeks + '주·' + b.usage + '박' : b.long ? ' · 장박' : '') +
+          (b.got ? '<br><span class="gotline">' + won(b.pay) + ' 중 ' + won(b.got) + ' 입금</span>' : '') + (telLink(b) ? '<br>' + telLink(b) : '');
         var amt = '<b class="owe">' + won(b.owe) + '</b> <span class="pill p-warn">' + esc(b.paid) + '</span>';
         return item(b, meta, '<span class="right">' + amt + '</span>');
       }).join('')) : '';
@@ -570,15 +576,18 @@ function showBooking(x, site) {
   var won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; };
   var rows = [
     ['경로', routeChip(x.route) || '-'],
-    ['기간', esc(x.period) + (x.nights ? ' · ' + x.nights + '박' : '') + (x.long ? ' · 장박' : '')],
+    ['기간', esc(x.period) + (x.nights ? ' · ' + x.nights + '박' : '')],
+    x.long && x.usage ? ['장박', (x.weeks ? x.weeks + '주 · ' : '') + x.usage + '박 중 <b>' + (x.used || 0) + '박</b> 이용' + ((x.uses || []).length ? '<div class="sub">' + x.uses.map(function (u) { return esc(u.date.slice(5).replace('-', '/')) + ' ' + u.nights + '박' + (u.memo ? ' (' + esc(u.memo) + ')' : ''); }).join(' · ') + '</div>' : '')] : null,
     ['인원', esc(x.people || '-')],
     ['전화', x.tel ? telLink(x) : esc(x.tel4 ? '끝 ' + x.tel4 : '-')],
     ['금액', x.pay ? won(x.pay) + (x.method ? ' · ' + esc(x.method) : '') : '-'],
-    ['입금', x.paid ? (x.paid === '입금완료' ? esc(x.paid) : '<span class="mini p-warn">' + esc(x.paid) + '</span>') : '-'],
+    ['입금', (x.paid ? (x.paid === '입금완료' ? esc(x.paid) : '<span class="mini p-warn">' + esc(x.paid) + '</span>') : '-') +
+      (x.got ? '<div>' + won(x.pay) + ' 중 <b>' + won(x.got) + '</b> 입금' + (x.pay > x.got ? ' · 남은 ' + won(x.pay - x.got) : '') + '</div><div class="sub">' +
+        x.deps.map(function (d) { return esc(d.date.slice(5).replace('-', '/')) + ' ' + esc(d.method) + ' ' + won(d.amount) + (d.memo ? ' (' + esc(d.memo) + ')' : ''); }).join('<br>') + '</div>' : '')],
     ['예약번호', esc(x.no || '-')]
   ];
   $('sheet-b').innerHTML = '<h4>' + esc(siteLabel(site || x.site)) + ' · ' + esc(x.name) + '</h4>' +
-    '<table class="bk">' + rows.map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table>' +
+    '<table class="bk">' + rows.filter(Boolean).map(function (r) { return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join('') + '</table>' +
     (x.memo ? '<details class="bkm"><summary>메모 보기</summary><div>' + esc(x.memo) + '</div></details>' : '') +
     '<p style="margin-top:12px"><button class="btn" id="sheet-x">닫기</button></p>';
   openSheet();
