@@ -187,6 +187,16 @@ table.bk td{padding:5px 0}
 .bar.l{background:var(--long-bg);color:var(--long)}
 .bar.st{border-radius:8px 0 0 8px;margin-left:3px}.bar.en{border-radius:0 8px 8px 0;margin-right:3px}.bar.st.en{border-radius:8px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.rq-btn{flex:1;text-align:left;font:inherit;font-size:15px;font-weight:600;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--tint);color:var(--ink)}
+.pk-nav{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:6px 0}
+.pk-m{margin-top:8px}.pk-t{font-weight:700;margin:4px 2px}
+.pk-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.pk-g b{font-size:12px;color:var(--muted);padding:2px 0}.pk-g b.sun,.pk-d.sun{color:var(--out)}.pk-g b.sat,.pk-d.sat{color:var(--stay)}
+.pk-d{border:0;background:none;padding:8px 0;border-radius:10px;font-size:14px;font-variant-numeric:tabular-nums}
+.pk-d.past{opacity:.35}.pk-d.today{font-weight:800;text-decoration:underline}
+.pk-d.in{background:var(--sage);border-radius:0}
+.pk-d.sa,.pk-d.sb{background:var(--pine);color:#fff!important;font-weight:700}
+#sheet>div{max-height:88vh;overflow:auto}
 .rq{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .rq input,.rq select{font:inherit;font-size:14px;padding:7px 9px;border-radius:10px;border:1px solid var(--line);background:var(--tint);color:var(--ink)}
 .rq .btn{background:var(--pine);color:#fff;border-color:transparent}
@@ -339,8 +349,8 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
 
 <section id="v-cal" hidden>
   <div class="card" style="margin-bottom:8px">
-    <div class="card-h"><div><h3>기간 조회</h3><div class="sub">입실일 ~ 퇴실일을 고르면 빈 사이트와 아래 달력이 그 기간으로 바뀌어요</div></div></div>
-    <div class="card-b pad"><form class="rq" id="rq"><input type="date" id="rq-d" aria-label="입실일"><span class="sub">~</span><input type="date" id="rq-e" aria-label="퇴실일"><button class="btn" type="submit">조회</button></form>
+    <div class="card-h"><div><h3>기간 조회</h3><div class="sub">날짜를 누르고 달력에서 입실일 → 퇴실일을 차례로 누르세요</div></div></div>
+    <div class="card-b pad"><form class="rq" id="rq"><button type="button" class="rq-btn" id="rq-btn">📅 <span id="rq-lab"></span></button><input type="hidden" id="rq-d"><input type="hidden" id="rq-e"></form>
       <div class="rres" id="rres"></div></div>
   </div>
   <div class="card">
@@ -616,13 +626,53 @@ function closeSheet() { if (history.state && history.state.sheet) history.back()
 $('sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet' || e.target.id === 'sheet-x') closeSheet(); });
 
 /* 기간조회 */
-function pYmd(v) { var p = String(v || '').split('-'); return p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : null; }
-$('rq-d').value = ymd(now); $('rq-e').value = ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
-// 입실일을 바꾸면 퇴실일이 그보다 앞서지 않게 하루 뒤로 맞춤
-$('rq-d').addEventListener('change', function () {
-  var a = pYmd(this.value), b = pYmd($('rq-e').value);
-  if (a && (!b || b <= a)) $('rq-e').value = ymd(new Date(a.getFullYear(), a.getMonth(), a.getDate() + 1));
+function fmtMD(d) { return (d.getMonth() + 1) + '/' + d.getDate() + '(' + '일월화수목금토'[d.getDay()] + ')'; }
+function rqLabel() {
+  var a = pYmd($('rq-d').value), b = pYmd($('rq-e').value);
+  $('rq-lab').textContent = a && b ? fmtMD(a) + ' ~ ' + fmtMD(b) + ' · ' + Math.round((b - a) / 86400000) + '박' : '날짜 선택';
+}
+var PK = { a: null, b: null, m: null };
+function drawPicker() {
+  var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), h = '';
+  for (var k = 0; k < 2; k++) {
+    var m0 = new Date(PK.m.getFullYear(), PK.m.getMonth() + k, 1), days = new Date(m0.getFullYear(), m0.getMonth() + 1, 0).getDate();
+    h += '<div class="pk-m"><div class="pk-t">' + m0.getFullYear() + '년 ' + (m0.getMonth() + 1) + '월</div><div class="pk-g">' +
+      '일월화수목금토'.split('').map(function (w, i) { return '<b class="' + (i === 0 ? 'sun' : i === 6 ? 'sat' : '') + '">' + w + '</b>'; }).join('');
+    for (var e = 0; e < m0.getDay(); e++) h += '<span></span>';
+    for (var d = 1; d <= days; d++) {
+      var dt = new Date(m0.getFullYear(), m0.getMonth(), d), c = [];
+      if (dt < t0) c.push('past');
+      if (PK.a && +dt === +PK.a) c.push('sa');
+      if (PK.b && +dt === +PK.b) c.push('sb');
+      if (PK.a && PK.b && dt > PK.a && dt < PK.b) c.push('in');
+      if (+dt === +t0) c.push('today');
+      if (dt.getDay() === 0) c.push('sun'); if (dt.getDay() === 6) c.push('sat');
+      h += '<button class="pk-d ' + c.join(' ') + '" data-d="' + ymd(dt) + '">' + d + '</button>';
+    }
+    h += '</div></div>';
+  }
+  $('sheet-b').innerHTML = '<h4>' + (PK.a && !PK.b ? '퇴실일을 누르세요' : '입실일을 누르세요') + '</h4>' +
+    '<div class="pk-nav"><button class="btn" data-mv="-1">‹ 이전 달</button><span class="sub">' + (PK.a ? fmtMD(PK.a) + ' 입실' + (PK.b ? ' ~ ' + fmtMD(PK.b) : '') : '') + '</span><button class="btn" data-mv="1">다음 달 ›</button></div>' + h +
+    '<p style="margin-top:10px"><button class="btn" id="sheet-x">닫기</button></p>';
+}
+$('rq-btn').addEventListener('click', function () {
+  PK.a = null; PK.b = null; var a = pYmd($('rq-d').value) || now; PK.m = new Date(a.getFullYear(), a.getMonth(), 1);
+  drawPicker(); openSheet();
 });
+$('sheet-b').addEventListener('click', function (e) {
+  var mv = e.target.closest('[data-mv]');
+  if (mv) { PK.m = new Date(PK.m.getFullYear(), PK.m.getMonth() + (+mv.dataset.mv), 1); drawPicker(); return; }
+  var c = e.target.closest('.pk-d'); if (!c) return;
+  var d = pYmd(c.dataset.d);
+  if (!PK.a || PK.b || d <= PK.a) { PK.a = d; PK.b = null; drawPicker(); return; }
+  PK.b = d; drawPicker();
+  $('rq-d').value = ymd(PK.a); $('rq-e').value = ymd(PK.b); rqLabel();
+  setTimeout(function () { closeSheet(); runRange(false); }, 250);
+});
+function pYmd(v) { var p = String(v || '').split('-'); return p.length === 3 ? new Date(+p[0], +p[1] - 1, +p[2]) : null; }
+$('rq-d').value = ymd(now); $('rq-e').value = ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 5)); rqLabel();
+// 입실일을 바꾸면 퇴실일이 그보다 앞서지 않게 하루 뒤로 맞춤
+
 $('rq').addEventListener('submit', function (e) { e.preventDefault(); runRange(false); });
 function runRange(keepCal) {
   var d = $('rq-d').value, a = pYmd(d), b = pYmd($('rq-e').value);
@@ -637,10 +687,10 @@ function runRange(keepCal) {
     if (!keepCal) { calStart = a; calDays = n; loadCal(); }
   }, function (err) { errBox($('rres'), err); });
 }
-// 달력 탭을 열 때마다 오늘 기준으로 초기화: 오늘~내일 빈 사이트 + 오늘부터 1주 달력
+// 달력 탭을 열 때마다 오늘 기준으로 초기화: 오늘부터 5박 빈 사이트 + 오늘부터 1주 달력
 function resetCal() {
   var t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  $('rq-d').value = ymd(t); $('rq-e').value = ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1));
+  $('rq-d').value = ymd(t); $('rq-e').value = ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 5)); rqLabel();
   calStart = t; calDays = 7; loadCal(); runRange(true);
 }
 $('cal-prev').addEventListener('click', function () { calStart = new Date(calStart.getFullYear(), calStart.getMonth(), calStart.getDate() - calDays); loadCal(); });
@@ -671,7 +721,7 @@ $('q').addEventListener('input', function () {
         var det = '<div>예약번호 ' + esc(b.no) + (b.route ? ' · ' + esc(b.route) : '') + '</div>' +
           (b.memo ? '<details><summary>메모 보기</summary><div class="memo">' + esc(b.memo) + '</div></details>' : '');
         return item(b, bits(b, true), '<span class="pill ' + cls + '">' + esc(b.label) + '</span>', det, unpaid)
-          .replace('<div class="item">', '<div class="item' + (b.rank >= 2 ? ' dim' : '') + '">');
+          .replace('<div class="item"', '<div class="item' + (b.rank >= 2 ? ' dim' : '') + '"');
       }).join('') : '<p class="empty">찾는 예약이 없어요.</p>';
     }, function (e) { if (my === qSeq) errBox($('results'), e); });
   }, 350);
