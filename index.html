@@ -155,6 +155,8 @@ table.bk td{padding:5px 0}
 .mb{display:grid;justify-items:center;align-content:end;gap:2px}
 .mb i{display:block;width:100%;max-width:18px;background:var(--moss);border-radius:4px 4px 0 0;min-height:1px}
 .mb .mv{font-size:9.5px;color:var(--muted)}.mb .ml{font-size:10px;color:var(--muted)}
+.free span.heldchip{grid-column:span 3;background:repeating-linear-gradient(135deg,var(--tint) 0 6px,var(--surface) 6px 12px);border-style:dashed;color:var(--muted)}
+.bar.h{background:repeating-linear-gradient(135deg,#E4E1D8 0 6px,#F1EEE6 6px 12px);color:#6F6A5E}
 .gotline{color:var(--in);font-weight:600}
 .of{font-size:11.5px;color:var(--muted)}
 .dueR{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
@@ -442,6 +444,9 @@ function item(b, meta, right, detail, tag) {
   return h + '</div>';
 }
 function telLink(b) { if (b.tel) return '<a class="call" href="tel:' + esc(String(b.tel).replace(/[^\d+]/g, '')) + '">' + esc(b.tel) + '</a>'; return b.tel4 ? '☎' + esc(b.tel4) : ''; }
+function heldChips(list) {
+  return (list || []).map(function (h) { return '<span class="heldchip" title="손님은 ' + esc(siteLabel(h.realSite)) + ' 사용 중">' + esc(siteLabel(h.site)) + ' ' + esc(h.name) + ' 묶임</span>'; }).join('');
+}
 function stayLen(b) {
   if (b.long && b.weeks) return '장박 ' + b.weeks + '주·' + b.usage + '박' + (b.used ? ' (' + b.used + '박 이용)' : '');
   return b.nights ? b.nights + '박' : '';
@@ -490,7 +495,7 @@ function loadToday() {
           '<span class="pill p-warn">' + esc(b.paid) + '</span></span>');
       }).join('')) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
-      '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + '</div>');
+      '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + heldChips(d.heldTonight) + '</div>');
     $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cFree + '</div>';
     RECENT = d.recent || [];
     var r0 = RECENT[0];
@@ -544,7 +549,7 @@ function loadCal() {
         if (!x) return '<td></td>';
         var prev = g.cells[i - 1], next = g.cells[i + 1];
         var st = !prev || prev.name !== x.name || x.first, en = !next || next.name !== x.name || next.first;
-        return '<td><span class="bar' + (x.long ? ' l' : '') + (st ? ' st' : '') + (en ? ' en' : '') + '" data-g="' + gi + '" data-i="' + i + '">' + (st ? esc(x.name) : '') + '</span></td>';
+        return '<td><span class="bar' + (x.held ? ' h' : '') + (x.long ? ' l' : '') + (st ? ' st' : '') + (en ? ' en' : '') + '" data-g="' + gi + '" data-i="' + i + '">' + (st ? esc(x.name) : '') + '</span></td>';
       }).join('') + '</tr>';
     });
     $('cal-body').innerHTML = h + '</table></div>';
@@ -615,6 +620,8 @@ function showBooking(x, site) {
   var won = function (n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; };
   var rows = [
     ['경로', routeChip(x.route) || '-'],
+    x.held ? ['묶임', '손님은 <b>' + esc(siteLabel(x.realSite)) + '</b> 사용 중 · ' + esc(x.route) + '엔 ' + esc(siteLabel(x.site)) + ' 그대로라 비어도 ' + esc(x.route) + '에선 못 팔아요'] :
+    x.chsite ? ['자리이동', esc(siteLabel(x.chsite)) + ' → ' + esc(siteLabel(x.site)) + ' <span class="sub">(' + esc(x.route) + '엔 ' + esc(siteLabel(x.chsite)) + ' 그대로)</span>'] : null,
     ['기간', esc(x.period) + (x.nights ? ' · ' + x.nights + '박' : '')],
     x.long && x.usage ? ['장박', (x.weeks ? x.weeks + '주 · ' : '') + x.usage + '박 중 <b>' + (x.used || 0) + '박</b> 이용' + ((x.uses || []).length ? '<div class="sub">' + x.uses.map(function (u) { return esc(u.date.slice(5).replace('-', '/')) + ' ' + u.nights + '박' + (u.memo ? ' (' + esc(u.memo) + ')' : ''); }).join(' · ') + '</div>' : '')] : null,
     ['인원', esc(x.people || '-')],
@@ -706,7 +713,7 @@ function runRange(keepCal) {
   $('rres').innerHTML = '<p class="loading">찾는 중…</p>';
   call('apiRange', [d, n], function (r) {
     $('rres').innerHTML = '<b>' + esc(r.start) + ' ~ ' + esc(r.end) + ' · ' + r.nights + '박</b> — 통째로 빈 사이트 <b>' + r.free.length + '곳</b>' +
-      '<div class="free">' + (r.free.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<span style="color:var(--out)">없어요</span>') + '</div>' ;
+      '<div class="free">' + (r.free.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<span style="color:var(--out)">없어요</span>') + heldChips(r.held) + '</div>' ;
     if (!keepCal) { calStart = a; calDays = n; loadCal(); }
   }, function (err) { errBox($('rres'), err); });
 }
