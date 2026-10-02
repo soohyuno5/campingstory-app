@@ -157,6 +157,8 @@ table.bk td{padding:5px 0}
 .mb .mv{font-size:9.5px;color:var(--muted)}.mb .ml{font-size:10px;color:var(--muted)}
 .free span.heldchip{grid-column:span 3;background:repeating-linear-gradient(135deg,var(--tint) 0 6px,var(--surface) 6px 12px);border-style:dashed;color:var(--muted)}
 .bar.h{background:repeating-linear-gradient(135deg,#E4E1D8 0 6px,#F1EEE6 6px 12px);color:#6F6A5E}
+.bar.gap{visibility:hidden}
+.cal td .bar+.bar{margin-top:1px}
 .gotline{color:var(--in);font-weight:600}
 .of{font-size:11.5px;color:var(--muted)}
 .dueR{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
@@ -545,11 +547,23 @@ function loadCal() {
     CAL = c;
     var h = '<div class="cal"><table><tr><th class="s">사이트</th>' + c.dates.map(function (d) { return '<th class="' + (d.weekend ? 'we' : '') + (d.ymd === today ? ' today' : '') + '">' + d.label + '<br>' + (d.ymd === today ? '오늘' : d.wd) + '</th>'; }).join('') + '</tr>';
     c.grid.forEach(function (g, gi) {
-      h += '<tr><td class="s"><b' + (isBp(g.site) ? ' class="bp"' : '') + '>' + esc(sName(g.site)) + '</b></td>' + g.cells.map(function (x, i) {
-        if (!x) return '<td></td>';
-        var prev = g.cells[i - 1], next = g.cells[i + 1];
+      // 묶임(캠핏엔 이 자리로 남은 옛 예약)과 실제 예약이 같은 칸에 겹치는 행은 두 줄: 위=묶임, 아래=실제 예약 (2026-10-03)
+      var dual = g.cells.some(function (x) { return x && x.also; });
+      function topOf(x) { return x ? (x.held ? x : (x.also || null)) : null; }
+      function botOf(x) { return x && !x.held ? x : null; }
+      function bar(x, prev, next, i, k) {
+        if (!x) return '<span class="bar gap"></span>';
         var st = !prev || prev.name !== x.name || x.first, en = !next || next.name !== x.name || next.first;
-        return '<td><span class="bar' + (x.held ? ' h' : '') + (x.long ? ' l' : '') + (st ? ' st' : '') + (en ? ' en' : '') + '" data-g="' + gi + '" data-i="' + i + '">' + (st ? esc(x.name) : '') + '</span></td>';
+        return '<span class="bar' + (x.held ? ' h' : '') + (x.long ? ' l' : '') + (st ? ' st' : '') + (en ? ' en' : '') + '" data-g="' + gi + '" data-i="' + i + '" data-k="' + k + '">' + (st ? esc(x.name) : '') + '</span>';
+      }
+      h += '<tr><td class="s"><b' + (isBp(g.site) ? ' class="bp"' : '') + '>' + esc(sName(g.site)) + '</b></td>' + g.cells.map(function (x, i) {
+        var pc = g.cells[i - 1], nc = g.cells[i + 1];
+        if (dual) {
+          if (!x) return '<td></td>';
+          return '<td>' + bar(topOf(x), topOf(pc), topOf(nc), i, 'h') + bar(botOf(x), botOf(pc), botOf(nc), i, 'r') + '</td>';
+        }
+        if (!x) return '<td></td>';
+        return '<td>' + bar(x, pc, nc, i, 'r') + '</td>';
       }).join('') + '</tr>';
     });
     $('cal-body').innerHTML = h + '</table></div>';
@@ -647,6 +661,7 @@ $('today-body').addEventListener('click', function (e) {
 $('cal-body').addEventListener('click', function (e) {
   var b = e.target.closest('.bar'); if (!b || !CAL) return;
   var g = CAL.grid[+b.dataset.g], x = g.cells[+b.dataset.i];
+  if (b.dataset.k === 'h' && !x.held && x.also) x = x.also;   // 겹친 칸에서 위쪽(묶임)을 눌렀으면 묶임 상세
   showBooking(x, g.site);
 });
 function openSheet() { if ($('sheet').hidden) history.pushState({ v: CUR, sheet: 1 }, ''); $('sheet').hidden = false; }
