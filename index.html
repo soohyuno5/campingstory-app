@@ -71,7 +71,7 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 .card-h .sub{margin-top:1px}
 .tag{font-size:12px;font-weight:600;padding:3px 10px;border-radius:8px;border:1px solid var(--line);background:var(--tint);color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .tag.in{color:var(--in);background:var(--in-bg);border-color:transparent}.tag.out{color:var(--out);background:var(--out-bg);border-color:transparent}
-.tag.stay{color:var(--stay);background:var(--stay-bg);border-color:transparent}.tag.warn{color:var(--ember);background:var(--ember-bg);border-color:transparent}
+.tag.stay{color:var(--stay);background:var(--stay-bg);border-color:transparent}.tag.long{color:var(--long);background:var(--long-bg);border-color:transparent}.tag.warn{color:var(--ember);background:var(--ember-bg);border-color:transparent}
 .card-b{padding:6px 8px}
 .card-b.pad{padding:14px 16px}
 .sub{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -163,6 +163,8 @@ table.bk td{padding:5px 0}
 .of{font-size:11.5px;color:var(--muted)}
 .dueR{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 .dueR>*{white-space:nowrap}
+.lbar{height:5px;border-radius:99px;background:var(--line);margin-top:6px;overflow:hidden}.lbar i{display:block;height:100%;background:var(--long);border-radius:99px}
+.lbar.over i{background:var(--out)}.lt{color:var(--long);font-size:14px}.lt.zero{color:var(--out)}
 .tel{user-select:all;color:var(--ink);font-weight:600}
 .owe{color:var(--ember);font-size:14px}
 .call{color:var(--pine);font-weight:600;text-decoration:none;white-space:nowrap}
@@ -496,9 +498,20 @@ function loadToday() {
         return item(b, meta, '<span class="dueR"><span><b class="owe">' + won(b.owe) + '</b>' + (b.got ? ' <span class="of">/ ' + won(b.pay) + '</span>' : '') + '</span>' +
           '<span class="pill p-warn">' + esc(b.paid) + '</span></span>');
       }).join('')) : '';
+    // 장박 이용: 계약 박수 중 쓴 박수·남은 박수 (2026-10-05). 누르면 이용 내역·입금이 있는 상세가 열린다.
+    var cLong = (d.longs || []).length ? card('c-long', '장박 이용', '쓴 박수 · 남은 박수', d.longs.length + '팀', 'long',
+      d.longs.map(function (b) {
+        var pct = b.usage ? Math.min(100, Math.round((b.used || 0) / b.usage * 100)) : 0;
+        var upcoming = b.ci > d.date;
+        var meta = esc(b.period) + (b.weeks ? ' · ' + b.weeks + '주' : '') + (upcoming ? ' · <b>입실 전</b>' : '') +
+          '<div class="lbar' + (b.over ? ' over' : '') + '"><i style="width:' + pct + '%"></i></div>';
+        var right = '<span class="dueR"><span><b class="lt' + (b.left === 0 ? ' zero' : '') + '">남은 ' + b.left + '박</b></span>' +
+          '<span class="of">쓴 ' + (b.used || 0) + ' / ' + b.usage + '박' + (b.over ? ' · ' + b.over + '박 초과' : '') + '</span></span>';
+        return item(b, meta, right);
+      }).join('')) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + heldChips(d.heldTonight) + '</div>');
-    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cFree + '</div>';
+    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cLong + cFree + '</div>';
     RECENT = d.recent || [];
     var r0 = RECENT[0];
     $('recent-line').hidden = !r0;
