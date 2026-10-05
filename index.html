@@ -319,6 +319,11 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
 }
 /* 아주 넓은 화면(PC 전체화면)에서만 3열, 입실·퇴실 묶음은 2칸 */
 @media (min-width:1400px){.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.pair{grid-column:span 2}}
+.rg-pre{display:flex;gap:6px;flex-wrap:wrap;padding:2px 8px 8px}.rg-pre button{border:1px solid #d9d2c0;background:transparent;border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;color:inherit}.rg-pre button.on{background:#264129;color:#fff;border-color:#264129}
+.rg-in{display:flex;align-items:center;gap:6px;padding:0 8px 8px}.rg-in input{flex:1;min-width:0;font:inherit;font-size:14px;padding:6px 8px;border:1px solid #d9d2c0;border-radius:8px;background:transparent;color:inherit}
+#rg-out{padding:0 8px 8px}.rg-top{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 0;font-size:13px}
+.rg-list{margin-top:6px;border-top:1px solid #e6dfcc}.rg-row{display:grid;grid-template-columns:62px 1fr auto 34px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #efe9d8;font-size:13px}.rg-row b{text-align:right}.rg-row .sub{font-size:11px;text-align:right}
+.rg-bar{height:8px;background:rgba(38,65,41,.1);border-radius:4px;overflow:hidden}.rg-bar i{display:block;height:100%;background:#264129;border-radius:4px}.rg-d.sat{color:#2f6fb0}.rg-d.sun{color:#c0392b}
 </style>
 </head>
 <body>
@@ -614,7 +619,7 @@ function loadStore() {
 }
 var STORE_W = 'week';
 function renderStore(which) {
-  var d = STORE; if (!d) return; STORE_W = which;
+  var d = STORE; if (!d) return; STORE_W = which; if (!RG.a) rgPreset('w7');
   var t = d.today || {}, cur = (d.monthly || []).slice(-1)[0] || {};
   var top = (which === 'month' ? d.month : d.week).top || [];
   var mx = Math.max.apply(null, (d.monthly || []).map(function (x) { return x.store; }).concat([1]));
@@ -628,14 +633,62 @@ function renderStore(which) {
       '<div class="st-line">이번 달 매점 <b>' + won(cur.store) + '</b> · ' + (cur.count || 0) + '건</div>' +
       (t.site ? '<div class="st-line sub">프론트 금액 입력(사이트 결제 등) ' + won(t.site) + ' · ' + t.siteCount + '건 — 매점과 따로</div>' : '') +
       '<div class="st-upd">토스 기준 ' + esc((d.updated || '').slice(5)) + ' · 30분마다 갱신</div>') +
+    card('s-range', '기간 매출', '', '', '', '<div class="rg-pre">' + [['today', '오늘'], ['yest', '어제'], ['w7', '7일'], ['mon', '이번 달'], ['pmon', '지난 달']].map(function (x) { return '<button data-rp="' + x[0] + '"' + (RG.p === x[0] ? ' class="on"' : '') + '>' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="rg-in"><input type="date" id="rg-a" value="' + RG.a + '"><span>~</span><input type="date" id="rg-b" value="' + RG.b + '"></div><div id="rg-out"></div>') +
     card('s-top', '잘 팔리는 품목 TOP 5', '', '<span class="seg"><button data-w="week"' + (which !== 'month' ? ' class="on"' : '') + '>7일</button><button data-w="month"' + (which === 'month' ? ' class="on"' : '') + '>이번 달</button></span>', '',
       top.length ? '<table class="bk" style="margin:0;padding:0 8px">' + top.map(function (r, i) { return '<tr><th style="width:auto;padding-left:8px">' + (i + 1) + '. ' + esc(r.name) + '</th><td style="text-align:right;padding-right:8px">' + r.qty + '개 · ' + won(r.amount) + '</td></tr>'; }).join('') + '</table>' : '<p class="empty">판매 기록이 없어요</p>') +
     card('s-month', '월별 매점 매출', '최근 12개월', '', '', '<div class="mbars" style="padding:8px">' + bars + '</div>') +
     card('s-recent', '최근 판매', '', '', '',
       ((d.recent || []).map(function (r) { return '<div class="st-line">' + esc(r.at) + ' · ' + esc(r.items) + ' <b>' + won(r.amount) + '</b></div>'; }).join('') || '<p class="empty">없어요</p>') +
       '<button class="st-more" id="st-price">매점 가격표 보기 ›</button>');
+  drawRange();
 }
+/* 기간 매출 (토스 일별 합계에서 계산) */
+var RG = { p: 'w7', a: '', b: '' };
+function ymdLocal(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function rgPreset(p) {
+  var t = new Date(); t.setHours(12); var a = new Date(t), b = new Date(t); RG.p = p;
+  if (p === 'yest') { a.setDate(a.getDate() - 1); b = new Date(a); }
+  else if (p === 'w7') a.setDate(a.getDate() - 6);
+  else if (p === 'mon') a = new Date(t.getFullYear(), t.getMonth(), 1, 12);
+  else if (p === 'pmon') { a = new Date(t.getFullYear(), t.getMonth() - 1, 1, 12); b = new Date(t.getFullYear(), t.getMonth(), 0, 12); }
+  RG.a = ymdLocal(a); RG.b = ymdLocal(b);
+}
+function drawRange() {
+  var d = STORE, out = $('rg-out'); if (!d || !out) return;
+  var a = RG.a, b = RG.b; if (a > b) { var x = a; a = b; b = x; }
+  var days = (d.daily || []).filter(function (r) { return r.d >= a && r.d <= b; });
+  var byD = {}; days.forEach(function (r) { byD[r.d] = r; });
+  var tot = 0, cnt = 0, site = 0, meth = {};
+  days.forEach(function (r) { tot += r.s; cnt += r.c; site += r.a; Object.keys(r.m || {}).forEach(function (k) { meth[k] = (meth[k] || 0) + r.m[k]; }); });
+  var n = Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 864e5) + 1;
+  var list = [], mx = 1, k, dt = new Date(a + 'T12:00');
+  for (k = 0; k < n && k < 62; k++) { var key = ymdLocal(dt), r = byD[key] || { s: 0, c: 0 }; mx = Math.max(mx, r.s); list.push([key, r, new Date(dt)]); dt.setDate(dt.getDate() + 1); }
+  var WD = '일월화수목금토';
+  var rows = list.reverse().map(function (x) {
+    return '<div class="rg-row"><span class="rg-d' + (x[2].getDay() === 6 ? ' sat' : x[2].getDay() === 0 ? ' sun' : '') + '">' + (x[2].getMonth() + 1) + '/' + x[2].getDate() + '(' + WD[x[2].getDay()] + ')</span><span class="rg-bar"><i style="width:' + Math.round(x[1].s / mx * 100) + '%"></i></span><b>' + (x[1].s ? won(x[1].s) : '-') + '</b><span class="sub">' + (x[1].c ? x[1].c + '건' : '') + '</span></div>';
+  }).join('');
+  // 품목 TOP: 일별 품목은 최근 120일만 보관
+  var it = {}, have = false;
+  Object.keys(d.dayItems || {}).forEach(function (day) { if (day >= a && day <= b) { have = true; Object.keys(d.dayItems[day]).forEach(function (nm) { var v = d.dayItems[day][nm]; it[nm] = it[nm] || [0, 0]; it[nm][0] += v[0]; it[nm][1] += v[1]; }); } });
+  var top = Object.keys(it).map(function (nm) { return { nm: nm, q: it[nm][0], m: it[nm][1] }; }).sort(function (p, q) { return q.q - p.q || q.m - p.m; }).slice(0, 5);
+  var mh = Object.keys(meth).map(function (k) { return '<span class="mini p-stay">' + esc(k) + ' ' + won(meth[k]) + '</span>'; }).join(' ');
+  out.innerHTML =
+    '<div class="st-top"><b class="st-sum">' + won(tot) + '</b><span class="sub">' + cnt + '건 · 하루 평균 ' + won(Math.round(tot / n)) + '</span></div>' +
+    (mh ? '<div class="st-line">' + mh + '</div>' : '') +
+    (site ? '<div class="st-line sub">프론트 금액 입력(사이트 결제 등) ' + won(site) + ' — 매점과 따로</div>' : '') +
+    (top.length ? '<div class="rg-top">' + top.map(function (r, i) { return '<span>' + (i + 1) + '. ' + esc(r.nm) + ' <b>' + r.q + '개</b></span>'; }).join('') + '</div>' : (have ? '' : '<div class="st-line sub">품목은 최근 120일까지만 보여요</div>')) +
+    '<div class="rg-list">' + rows + '</div>' + (n > 62 ? '<div class="st-line sub">일별은 62일까지만 나열해요</div>' : '');
+}
+$('store-body').addEventListener('change', function (e) {
+  if (e.target.id === 'rg-a' || e.target.id === 'rg-b') {
+    RG.a = $('rg-a').value || RG.a; RG.b = $('rg-b').value || RG.b; RG.p = '';
+    document.querySelectorAll('.rg-pre button').forEach(function (x) { x.classList.remove('on'); }); drawRange();
+  }
+});
 $('store-body').addEventListener('click', function (e) {
+  var rp = e.target.closest('.rg-pre button');
+  if (rp) { rgPreset(rp.dataset.rp); $('rg-a').value = RG.a; $('rg-b').value = RG.b; document.querySelectorAll('.rg-pre button').forEach(function (x) { x.classList.toggle('on', x === rp); }); drawRange(); return; }
   var b = e.target.closest('.seg button'); if (b) { renderStore(b.dataset.w); return; }
   if (e.target.closest('#st-price')) { show('info'); openDoc('Store_Price_List', '매점 가격표', ''); }
 });
