@@ -68,7 +68,7 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 .grid>*,.pair>*{min-width:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
 .card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:10px 14px 8px;border-bottom:1px solid var(--line)}
-.card-h h3{margin:0;font-size:16px;font-weight:700}
+.card-h h2{margin:0;font-size:16px;font-weight:700}
 .card-h .sub{margin-top:1px}
 .tag{font-size:12px;font-weight:600;padding:3px 10px;border-radius:8px;border:1px solid var(--line);background:var(--tint);color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
 .tag.in{color:var(--in);background:var(--in-bg);border-color:transparent}.tag.out{color:var(--out);background:var(--out-bg);border-color:transparent}
@@ -114,7 +114,7 @@ h1{font-size:18px;white-space:normal;word-break:keep-all;line-height:1.2;margin:
 .card.nil .card-b{display:none}
 .card.nil .card-h{padding-bottom:10px}
 .pair .card-h{padding:11px 10px 9px;align-items:center}
-.pair .card-h h3{font-size:15px}
+.pair .card-h h2{font-size:15px}
 .pair .card-h .sub{display:none}
 .pair .card-h{border-bottom:0;padding-bottom:4px}
 .pair .card-b{padding:2px 4px}
@@ -231,7 +231,7 @@ table.bk td{padding:5px 0}
 .grid.g2{display:block;column-count:2;column-gap:8px}
 .grid.g2>.card{break-inside:avoid;margin-bottom:8px;display:inline-block;width:100%}
 #info-list .card-h{padding:8px 10px 6px}
-#info-list .card-h h3{font-size:14.5px}
+#info-list .card-h h2{font-size:14.5px}
 #info-list .card-b{padding:0 6px 2px}
 .sch{display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:center;padding:5px 8px;border-top:1px solid var(--line)}
 .sch:first-child{border-top:0}
@@ -333,7 +333,7 @@ body{font-weight:500;text-rendering:optimizeLegibility}
 .meta,.sub,.right,.hello,.of,.day .dd,.day .r,.mb .mv,.mb .ml,.kpi span,.doc span,.sch .when,.empty,.st-upd,.legend{font-weight:500}
 .item.dim .meta,.item.dim .who{color:var(--muted)}
 .card{box-shadow:none}
-.card-h h3{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.card-h h2{font-size:17px;font-weight:800;letter-spacing:-.01em}
 .grid{gap:12px}
 nav{border-top:1px solid var(--line)}
 nav .tab{font-size:11px;border-radius:0}
@@ -374,7 +374,7 @@ nav .tab{gap:2px;padding-top:4px}
 .dt{font-size:13px;font-weight:600;color:var(--muted);margin-left:4px}
 .who{font-weight:700}
 .meta,.sub,.right,.of,.hello{font-size:13px;font-weight:500}
-.card-h h3{font-weight:800}
+.card-h h2{font-weight:800}
 .mini,.pill,.tag,.rchip{font-weight:700}
 nav .tab{font-weight:600}
 .kpi span,.day .dd,.day .r{font-weight:600}
@@ -422,8 +422,8 @@ nav .tab[aria-selected=true]{color:var(--pine)}
 @media (prefers-color-scheme:dark){.card,.kpi,.weekbox{box-shadow:none;border:1px solid var(--line)}}
 /* ===== 스타벅스 DESIGN.md 본격 적용(2026-11-21): 크림 캔버스·세라믹·초록 제목·알약·눌림 효과 ===== */
 body{background:var(--bg)}
-h1,.card-h h3{color:var(--pine);font-weight:700}
-.card-h h3{font-size:17px}
+h1,.card-h h2{color:var(--pine);font-weight:700}
+.card-h h2{font-size:17px}
 .eyebrow{color:var(--moss)}
 nav{background:#FFFFFF}
 .btn,.pb,.rg-pre button,.chips button,.seg button,.chatbar button,.st-more,.kpi,.tab{transition:transform .12s}
@@ -445,7 +445,7 @@ input,textarea,select{font-weight:600}
 /* 선명도 4차: 글자 크기 +1px, 글자를 흐리게 만드는 transform 효과 제거(윈도우 글자 보정이 꺼지는 원인) */
 body{font-size:16px}
 .meta,.sub,.right,.detail,.pair .meta,.of,.st-line{font-size:14px}
-.card-h h3{font-size:18px}
+.card-h h2{font-size:18px}
 .kpi span,.day .dd,.day .r,.tag,.mini,.pill{font-size:12.5px}
 .btn,.pb,.rg-pre button,.chips button,.seg button,.chatbar button,.st-more,.kpi,.tab{transition:none}
 .msg,.item{animation:none!important}
@@ -465,7 +465,7 @@ header.ph .kpi span{color:rgba(255,255,255,.78)}
 header.ph .weekbox{box-shadow:none}
 header.ph .plogo{background:#fff;border-radius:50%;padding:2px;mix-blend-mode:normal}
 #c-due{background:#1E3932;color:#fff}
-#c-due .card-h h3{color:#fff}
+#c-due .card-h h2{color:#fff}
 #c-due .sub,#c-due .chev{color:rgba(255,255,255,.78)}
 #c-due>summary .tag{background:#fff;color:#C82014;border:0}
 #c-due .card-b{background:#fff;color:var(--ink);border-radius:0 0 12px 12px}
@@ -490,12 +490,13 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
 #c-today>.card-h,#c-stay>.card-h,#c-tmr>.card-h,#c-free>.card-h{padding-right:44px}
 #frap[hidden]{display:none}
 .pbr{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-weight:700;color:var(--ink)}
+.card-h h2{margin:0;line-height:1.3}
 </style>
 </head>
 <body>
 <button id="frap" aria-label="새로고침" title="새로고침"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v5h-5"/></svg></button>
 <nav role="tablist">
-  <div class="brand"><div class="av"><img id="navlogo" alt=""></div><div><b>캠핑스토리</b><span>가족 운영판</span></div></div>
+  <div class="brand"><div class="av"><img id="navlogo" src="symbol.jpg" alt=""></div><div><b>캠핑스토리</b><span>가족 운영판</span></div></div>
   <button class="tab" data-v="today" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 20h18M5.5 20 12 6l6.5 14M12 6v14"/></svg>오늘</button>
   <button class="tab" data-v="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>달력</button>
   <button class="tab" data-v="store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 9h16l-1.2 11H5.2z"/><path d="M8.5 9V7a3.5 3.5 0 0 1 7 0v2"/></svg>매점</button>
@@ -505,9 +506,9 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
 </nav>
 
 <main>
-<div class="mhead"><img id="logo" alt="캠핑스토리"></div>
+<div class="mhead"><img id="logo" src="logo.jpg" alt="캠핑스토리"></div>
 <header class="ph">
-  <img class="plogo" id="plogo" alt="캠핑스토리">
+  <img class="plogo" id="plogo" src="symbol.jpg" alt="캠핑스토리">
   <div class="phl"><div class="eyebrow" id="peye">Camping Story</div><h1 id="ptitle"></h1></div>
   <div class="kpis" id="kpis">
     <button class="kpi in" data-go="c-today"><b id="k-in">-</b><span>입실</span></button>
@@ -532,12 +533,12 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
 
 <section id="v-cal" hidden>
   <div class="card" style="margin-bottom:8px">
-    <div class="card-h"><div><h3>기간 조회</h3><div class="sub">날짜를 누르고 달력에서 입실일 → 퇴실일을 차례로 누르세요</div></div></div>
+    <div class="card-h"><div><h2>기간 조회</h2><div class="sub">날짜를 누르고 달력에서 입실일 → 퇴실일을 차례로 누르세요</div></div></div>
     <div class="card-b pad"><form class="rq" id="rq"><button type="button" class="rq-btn" id="rq-btn">📅 <span id="rq-lab"></span></button><input type="hidden" id="rq-d"><input type="hidden" id="rq-e"></form>
       <div class="rres" id="rres"></div></div>
   </div>
   <div class="card">
-    <div class="card-h"><div><h3>사이트별 보기</h3><div class="sub" id="cal-range"></div></div>
+    <div class="card-h"><div><h2>사이트별 보기</h2><div class="sub" id="cal-range"></div></div>
       <div><button class="btn" id="cal-prev" aria-label="이전">‹ 이전</button> <button class="btn" id="cal-next" aria-label="다음">다음 ›</button></div></div>
     <div id="cal-body"><p class="loading">불러오는 중…</p></div>
     <div class="legend"><span><i style="background:var(--stay-bg)"></i>일반 예약</span><span><i style="background:var(--long-bg)"></i>장박</span><span style="color:var(--ember)">금·토</span><span>막대 누르면 상세</span></div>
@@ -552,7 +553,7 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
 
 <section id="v-info" hidden>
   <div class="card" id="sched" style="margin-bottom:8px">
-    <div class="card-h"><div><h3>다가오는 일정</h3><div class="sub">1년에 한 번 챙길 일 · 약정·점검·보험·대출</div></div><button class="btn" id="sched-all">전체</button></div>
+    <div class="card-h"><div><h2>다가오는 일정</h2><div class="sub">1년에 한 번 챙길 일 · 약정·점검·보험·대출</div></div><button class="btn" id="sched-all">전체</button></div>
     <div class="card-b" id="sched-b"><p class="loading" style="padding:8px">불러오는 중…</p></div>
   </div>
   <div class="card" id="dsearch" style="margin-bottom:8px">
@@ -563,7 +564,7 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
   <div id="info-list"><p class="loading">불러오는 중…</p></div>
   <div id="info-doc" hidden>
     <div class="card">
-      <div class="card-h"><div><h3 id="doc-name"></h3><div class="sub" id="doc-title"></div></div><button class="btn" id="doc-back">‹ 목록</button></div>
+      <div class="card-h"><div><h2 id="doc-name"></h2><div class="sub" id="doc-title"></div></div><button class="btn" id="doc-back">‹ 목록</button></div>
       <div class="card-b pad md" id="doc-body"></div>
     </div>
   </div>
@@ -571,7 +572,7 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
 
 <section id="v-ask" hidden>
   <div class="card">
-    <div class="card-h"><div><h3>캠핑스토리 도우미</h3><div class="sub">예약 원장과 캠핑장 정보를 근거로 답해요</div></div><span class="tag" id="model-tag">Gemini</span></div>
+    <div class="card-h"><div><h2>캠핑스토리 도우미</h2><div class="sub">예약 원장과 캠핑장 정보를 근거로 답해요</div></div><span class="tag" id="model-tag">Gemini</span></div>
     <div class="card-b pad" id="ask-b">
       <div class="chips" id="chips">
         <button>오늘 입실 누구야?</button><button>주말 빈자리 있어?</button><button>늦은 퇴실 얼마야?</button><button>샤워실 몇 시까지야?</button>
@@ -635,7 +636,7 @@ function short(b) { return [stayLen(b), esc(b.people || '')].filter(Boolean).joi
 function endOf(b) { var p = String(b.period || '').split('~'); return p[1] ? '~' + esc(p[1]) : ''; }
 function tmrLabel(ymdStr) { var p = String(ymdStr).split('-'); var t = new Date(+p[0], +p[1] - 1, +p[2] + 1); return (t.getMonth() + 1) + '/' + t.getDate() + '(' + '일월화수목금토'[t.getDay()] + ')'; }
 function card(id, title, sub, tag, tagCls, body, fold) {
-  var head = '<div><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span>';
+  var head = '<div><h2>' + title + '</h2>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span>';
   // 접이식(fold): 제목 줄을 누르면 펼쳐지고, 오른쪽 화살표(›)로 접고 펼 수 있다는 걸 보여준다
   if (fold) return '<details class="card fold" id="' + id + '"><summary class="card-h">' + head + '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="card-b">' + body + '</div></details>';
   return '<div class="card' + (body === '<p class="empty">없어요</p>' ? ' nil' : '') + '" id="' + id + '"><div class="card-h">' + head + '</div><div class="card-b">' + body + '</div></div>';
@@ -1239,10 +1240,12 @@ function pushBar() {
     setTimeout(pushBar, 600);
   };
 }
+// 대시보드가 'Typical site'면 OneSignal은 경로 옵션을 무시하고 사이트 꼭대기(/OneSignalSDKWorker.js)에 등록하려다 실패한다.
+// 앱이 /campingstory-app/ 폴더에 있으므로 serviceWorkerOverrideForTypical 로 우리 sw.js 를 쓰게 한다(2026-11-21).
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 window.OneSignalDeferred.push(function (OneSignal) {
   try {
-    return OneSignal.init({ appId: OS_APP_ID, serviceWorkerPath: 'campingstory-app/sw.js', serviceWorkerParam: { scope: '/campingstory-app/' }, notifyButton: { enable: false }, allowLocalhostAsSecureOrigin: false })
+    return OneSignal.init({ appId: OS_APP_ID, serviceWorkerOverrideForTypical: true, path: '/campingstory-app/', serviceWorkerPath: 'sw.js', serviceWorkerParam: { scope: '/campingstory-app/' }, notifyButton: { enable: false }, allowLocalhostAsSecureOrigin: false })
       .then(function () { OSX = OneSignal; try { OneSignal.User.PushSubscription.addEventListener('change', pushBar); } catch (e) { } pushBar(); })
       .catch(function (e) { OS_ERR = String(e && e.message || e).slice(0, 100); pushBar(); });
   } catch (e) { OS_ERR = String(e && e.message || e).slice(0, 100); pushBar(); }
