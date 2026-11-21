@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#F7F3EA">
+<meta name="theme-color" content="#FFFFFF">
 <title>캠핑스토리</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.png">
@@ -18,16 +18,16 @@ var LOGO_H = 'logo.jpg', SYMBOL = 'symbol.jpg';
 </script>
 <style>
 :root{
-  --pine:#264129; --moss:#5E7F5F; --sage:#E6EBDD; --sand:#DCD3BF; --gold:#A8742E;
-  --bg:#F7F3EA; --side:#FBF8F1; --surface:#FFFDF8; --tint:#F4F0E6; --ink:#1F261F; --muted:#6F7368; --line:#E7E0D1;
+  --pine:#222222; --moss:#3A3A3A; --sage:#F4F4F4; --sand:#E6E6E6; --gold:#A8742E;
+  --bg:#FFFFFF; --side:#FFFFFF; --surface:#FFFFFF; --tint:#F4F4F4; --ink:#222222; --muted:#8B8B8B; --line:#EBEBEB;
   --ember:#B8691F; --ember-bg:#F7E6D3;
   --in:#2F7A4A; --in-bg:#DCEFE1; --out:#B04A33; --out-bg:#F6DFD8; --stay:#3A6284; --stay-bg:#DFE9F2; --long:#6D5189; --long-bg:#EAE1F2;
   --sans:"IBM Plex Sans KR",system-ui,"Malgun Gothic",sans-serif; --num:"Bungee","IBM Plex Sans KR",sans-serif;
-  --r:18px; --navw:248px;
+  --r:12px; --navw:248px;
 }
 @media (prefers-color-scheme:dark){:root{color-scheme:dark;
-  --pine:#9CC39E; --moss:#A9C3A0; --sage:#27301F; --sand:#5A5445; --gold:#E0B070;
-  --bg:#12160F; --side:#161B13; --surface:#1B2118; --tint:#20271D; --ink:#EDEFE8; --muted:#A3A89B; --line:#2E362A;
+  --pine:#F2F2F2; --moss:#CFCFCF; --sage:#242424; --sand:#3A3A3A; --gold:#E0B070;
+  --bg:#121212; --side:#121212; --surface:#1B1B1B; --tint:#242424; --ink:#F2F2F2; --muted:#9A9A9A; --line:#2C2C2C;
   --ember:#E7A565; --ember-bg:#3A2A1A;
   --in:#86D19F; --in-bg:#1C3424; --out:#F1A08B; --out-bg:#3A221C; --stay:#98BEE0; --stay-bg:#1C2A37; --long:#C9AEEA; --long-bg:#2C2338;}}
 *{box-sizing:border-box}
@@ -324,6 +324,31 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
 #rg-out{padding:0 8px 8px}.rg-top{display:flex;flex-wrap:wrap;gap:4px 12px;padding:4px 0;font-size:13px}
 .rg-list{margin-top:6px;border-top:1px solid #e6dfcc}.rg-row{display:grid;grid-template-columns:62px 1fr auto 34px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #efe9d8;font-size:13px}.rg-row b{text-align:right}.rg-row .sub{font-size:11px;text-align:right}
 .rg-bar{height:8px;background:rgba(38,65,41,.1);border-radius:4px;overflow:hidden}.rg-bar i{display:block;height:100%;background:#264129;border-radius:4px}.rg-d.sat{color:#2f6fb0}.rg-d.sun{color:#c0392b}
+
+/* ===== KREAM 스타일 (2026-11-21): 흰 바탕·검정 포인트·얇은 선·평평한 카드 ===== */
+h1{font-weight:800;letter-spacing:-.02em}
+.card{box-shadow:none}
+.card-h h3{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.grid{gap:12px}
+nav{border-top:1px solid var(--line)}
+nav .tab{font-size:11px;border-radius:0}
+nav .tab svg{stroke-width:1.6}
+nav .tab[aria-selected=true]{color:var(--ink);font-weight:700}
+nav .tab[aria-selected=true] svg{background:none;padding:0;width:22px;height:22px;margin:0;stroke-width:2.2}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.rg-pre button{border-color:var(--line)}
+.rg-pre button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rg-in input{border-color:var(--line)}
+.rg-list{border-top-color:var(--line)}.rg-row{border-bottom-color:var(--line)}
+.rg-bar{background:var(--tint)}.rg-bar i{background:var(--ink)}
+.me{background:var(--ink);color:var(--bg);border-color:transparent}
+.me small{color:var(--muted)}
+.chatbar button{background:var(--ink);color:var(--bg)}
+.btn{border-radius:8px}
+.chips button{background:var(--surface)}
+.search input{background:var(--tint);border-color:transparent}
+mark{background:#FFE9A8}
+@media (min-width:1000px){nav .tab[aria-selected=true]{background:var(--tint);border-color:transparent;font-weight:700}}
 </style>
 </head>
 <body>
