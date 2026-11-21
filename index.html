@@ -489,6 +489,7 @@ nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06)
 /* 개수 알약을 모든 카드에서 같은 세로줄에: 화살표 없는 카드는 화살표 자리(30px)만큼 오른쪽을 비운다 */
 #c-today>.card-h,#c-stay>.card-h,#c-tmr>.card-h,#c-free>.card-h{padding-right:44px}
 #frap[hidden]{display:none}
+.pbr{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-weight:700;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -1218,14 +1219,14 @@ window.addEventListener('popstate', function (e) {
 show('today', true); loadToday();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
 /* 체크인 푸시 알림(OneSignal). 알림은 서버가 보내고, 여기선 '이 폰에서 받기'만 켠다. 앱 주소(공식 주소)에서만 동작. */
-var OS_APP_ID = 'ce36a80b-59ac-4289-b381-a23034236e8e', OSX = null;
+var OS_APP_ID = 'ce36a80b-59ac-4289-b381-a23034236e8e', OSX = null, OS_ERR = '';
 var BELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
 function pushBar() {
   var el = $('pushbar'); if (!el) return;
-  if (!OSX) { el.hidden = true; return; }
+  if (!OSX) { el.hidden = false; el.innerHTML = '<div class="pb off">' + BELL + '<span>' + (OS_ERR ? '알림을 켜지 못했어요: ' + esc(OS_ERR) : '알림 기능을 불러오는 중이에요…') + '</span>' + (OS_ERR ? '<small><button class="pbr" onclick="location.reload()">다시 시도</button></small>' : '') + '</div>'; return; }
   var supported = true, perm = '', on = false;
   try { supported = OSX.Notifications.isPushSupported(); perm = OSX.Notifications.permission ? 'granted' : (Notification.permission || ''); on = !!OSX.User.PushSubscription.optedIn; } catch (e) { supported = false; }
-  if (!supported) { el.hidden = true; return; }
+  if (!supported) { el.hidden = false; el.innerHTML = '<div class="pb off">' + BELL + '<span>이 화면에서는 알림을 쓸 수 없어요. 크롬으로 연 설치 앱에서 열어 주세요</span></div>'; return; }
   el.hidden = false;
   if (on) el.innerHTML = '<button class="pb on" id="pb">' + BELL + '<span>체크인 알림 켜짐</span><small>누르면 끄기</small></button>';
   else if (perm === 'denied' || (window.Notification && Notification.permission === 'denied')) el.innerHTML = '<div class="pb off">' + BELL + '<span>알림이 막혀 있어요. 브라우저 설정에서 알림을 허용해 주세요</span></div>';
@@ -1243,9 +1244,11 @@ window.OneSignalDeferred.push(function (OneSignal) {
   try {
     return OneSignal.init({ appId: OS_APP_ID, serviceWorkerPath: 'campingstory-app/sw.js', serviceWorkerParam: { scope: '/campingstory-app/' }, notifyButton: { enable: false }, allowLocalhostAsSecureOrigin: false })
       .then(function () { OSX = OneSignal; try { OneSignal.User.PushSubscription.addEventListener('change', pushBar); } catch (e) { } pushBar(); })
-      .catch(function () { });
-  } catch (e) { }
+      .catch(function (e) { OS_ERR = String(e && e.message || e).slice(0, 100); pushBar(); });
+  } catch (e) { OS_ERR = String(e && e.message || e).slice(0, 100); pushBar(); }
 });
+setTimeout(function () { if (!OSX && !OS_ERR) { OS_ERR = '불러오기 시간 초과(인터넷·차단 앱 확인)'; pushBar(); } }, 9000);
+setTimeout(pushBar, 300);
 
 
 var _fr = document.getElementById('frap'); if (_fr) _fr.addEventListener('click', function () { var r = document.getElementById('reload'); if (r && r.offsetParent) r.click(); else location.reload(); });
