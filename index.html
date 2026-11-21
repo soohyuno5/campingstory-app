@@ -4,11 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#F2F0EB">
 <title>캠핑스토리</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <script>
@@ -18,18 +19,18 @@ var LOGO_H = 'logo.jpg', SYMBOL = 'symbol.jpg';
 </script>
 <style>
 :root{
-  --pine:#222222; --moss:#3A3A3A; --sage:#F4F4F4; --sand:#E6E6E6; --gold:#A8742E;
-  --bg:#FFFFFF; --side:#FFFFFF; --surface:#FFFFFF; --tint:#F4F4F4; --ink:#222222; --muted:#8B8B8B; --line:#EBEBEB;
-  --ember:#B8691F; --ember-bg:#F7E6D3;
-  --in:#2F7A4A; --in-bg:#DCEFE1; --out:#B04A33; --out-bg:#F6DFD8; --stay:#3A6284; --stay-bg:#DFE9F2; --long:#6D5189; --long-bg:#EAE1F2;
-  --sans:"IBM Plex Sans KR",system-ui,"Malgun Gothic",sans-serif; --num:"Bungee","IBM Plex Sans KR",sans-serif;
+  --pine:#006241; --moss:#00754A; --sage:#D4E9E2; --sand:#EDEBE9; --gold:#6B6B6B;
+  --bg:#F2F0EB; --side:#FFFFFF; --surface:#FFFFFF; --tint:#F2F0EB; --ink:#212121; --muted:#3F3F3F; --line:#E4E0D8;
+  --ember:#C82014; --ember-bg:#FCE8E6;
+  --in:#006241; --in-bg:#D4E9E2; --out:#4D4D4D; --out-bg:#EDEBE9; --stay:#1F1F1F; --stay-bg:#F2F0EB; --long:#1E3932; --long-bg:#EDEBE9;
+  --sans:"IBM Plex Sans KR",system-ui,"Malgun Gothic",sans-serif; --num:"IBM Plex Sans KR",system-ui,"Malgun Gothic",sans-serif;
   --r:12px; --navw:248px;
 }
 @media (prefers-color-scheme:dark){:root{color-scheme:dark;
-  --pine:#F2F2F2; --moss:#CFCFCF; --sage:#242424; --sand:#3A3A3A; --gold:#E0B070;
-  --bg:#121212; --side:#121212; --surface:#1B1B1B; --tint:#242424; --ink:#F2F2F2; --muted:#9A9A9A; --line:#2C2C2C;
-  --ember:#E7A565; --ember-bg:#3A2A1A;
-  --in:#86D19F; --in-bg:#1C3424; --out:#F1A08B; --out-bg:#3A221C; --stay:#98BEE0; --stay-bg:#1C2A37; --long:#C9AEEA; --long-bg:#2C2338;}}
+  --pine:#5FD0A4; --moss:#00A862; --sage:#1E2B23; --sand:#2F4036; --gold:#B4C2B8;
+  --bg:#0F1511; --side:#0F1511; --surface:#17201A; --tint:#1E2922; --ink:#F2F7F3; --muted:#B4C2B8; --line:#2A382F;
+  --ember:#F0A08F; --ember-bg:#3A221C;
+  --in:#86D19F; --in-bg:#1C3424; --out:#B4C2B8; --out-bg:#26302A; --stay:#D5DDD7; --stay-bg:#222B25; --long:#D5DDD7; --long-bg:#2A352E;}}
 *{box-sizing:border-box}
 html,body{margin:0}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -327,6 +328,10 @@ mark{background:#F6E3A8;color:inherit;border-radius:3px;padding:0 1px}
 
 /* ===== KREAM 스타일 (2026-11-21): 흰 바탕·검정 포인트·얇은 선·평평한 카드 ===== */
 h1{font-weight:800;letter-spacing:-.02em}
+/* 글자 선명도: 보조 글씨 대비를 올리고, 기본 굵기를 한 단계 올림 */
+body{font-weight:500;text-rendering:optimizeLegibility}
+.meta,.sub,.right,.hello,.of,.day .dd,.day .r,.mb .mv,.mb .ml,.kpi span,.doc span,.sch .when,.empty,.st-upd,.legend{font-weight:500}
+.item.dim .meta,.item.dim .who{color:var(--muted)}
 .card{box-shadow:none}
 .card-h h3{font-size:17px;font-weight:800;letter-spacing:-.01em}
 .grid{gap:12px}
@@ -349,9 +354,145 @@ nav .tab[aria-selected=true] svg{background:none;padding:0;width:22px;height:22p
 .search input{background:var(--tint);border-color:transparent}
 mark{background:#FFE9A8}
 @media (min-width:1000px){nav .tab[aria-selected=true]{background:var(--tint);border-color:transparent;font-weight:700}}
+.card.fold>summary{list-style:none;cursor:pointer;align-items:center}
+.card.fold>summary::-webkit-details-marker{display:none}
+.card.fold:not([open])>summary{border-bottom:0;padding-bottom:12px}
+.card.fold .chev{width:20px;height:20px;flex:0 0 20px;color:var(--muted);transition:transform .2s;margin-left:2px}
+.card.fold[open] .chev{transform:rotate(180deg)}
+.card.fold>summary:active{background:var(--tint)}
+/* UI 다듬기(2026-11-21): 구분선 정리 · 요약 숫자 키움 · 하단 탭 아이콘 키움 */
+.pair .item{border-bottom:1px solid var(--line);border-radius:0;padding:8px 4px}
+.pair .card-b{padding:0 12px 4px}
+.kpi{padding:9px 2px 8px}
+.kpi b{font-size:26px}
+.kpi span{font-size:11px}
+nav .tab svg{width:26px;height:26px}
+nav .tab[aria-selected=true] svg{width:26px;height:26px}
+nav .tab{gap:2px;padding-top:4px}
+@media (min-width:1000px){nav .tab svg,nav .tab[aria-selected=true] svg{width:22px;height:22px}.kpi b{font-size:30px}}
+/* 글씨 굵기·선명도 2차(2026-11-21): 보조 글씨 더 진하게, 이름·제목·알약은 굵게 */
+.dt{font-size:13px;font-weight:600;color:var(--muted);margin-left:4px}
+.who{font-weight:700}
+.meta,.sub,.right,.of,.hello{font-size:13px;font-weight:500}
+.card-h h3{font-weight:800}
+.mini,.pill,.tag,.rchip{font-weight:700}
+nav .tab{font-weight:600}
+.kpi span,.day .dd,.day .r{font-weight:600}
+.day .dw,.day b{font-weight:800}
+.pair .meta{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:-.03em}
+#c-stay .meta{white-space:nowrap}
+.item.dim{opacity:.72}
+.item.dim .who{color:var(--ink)}
+.site{font-weight:700}
+/* 체크인 알림 켜기 줄 */
+#pushbar{margin:0 0 10px}
+.pb{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:11px 14px;font-weight:700;font-size:14px}
+.pb svg{width:20px;height:20px;flex:0 0 20px}
+.pb small{margin-left:auto;font-size:12px;font-weight:500;color:var(--muted);text-align:right}
+.pb.on{background:var(--in-bg);border-color:transparent;color:var(--in)}
+.pb.off{font-weight:500;color:var(--muted)}
+/* 화이트+초록(2026-11-21 확정, 중간안): 선택·버튼·강조는 초록, 나머지는 흰색·진한 글자 */
+.seg button.on,.rg-pre button.on{background:var(--pine);color:#fff;border-color:var(--pine)}
+.me,.chatbar button{background:var(--pine);color:#fff}
+.me small{color:#D9F1E2}
+.rg-bar i{background:var(--pine)}
+nav .tab[aria-selected=true]{color:var(--pine)}
+.kpi span::after{content:" ›";font-weight:700}
+.pair .meta{font-size:12.5px}
+.chat{align-content:start}
+.msg{font-weight:500}
+/* ===== 삼자회의 반영(2026-11-21): 상태색 단순화·숫자체 교체·글자 키움 ===== */
+.kpi b,.site,.st-sum,.sch .dd,.cal td.s b,.mb .mv{font-family:var(--num);font-weight:800;letter-spacing:-.02em}
+.kpi.in b,.kpi.out b,.kpi.stay b,.kpi.kfree b{color:var(--ink)}
+.kpi span{font-size:12px;font-weight:600}
+.mini,.pill{font-size:12px;font-weight:700}
+.tag{font-size:12.5px;font-weight:700}
+.sub,.meta,.right,.detail,.pair .meta{font-size:13px;font-weight:500}
+.r-cf,.r-tq,.r-nv{background:var(--tint);color:var(--ink);border:1px solid var(--line)}
+.site.bp,.cal td.s b.bp,.free span.bp{background:#EDEBE9;color:#1F1F1F}
+.p-stay,.tag.stay{border:1px solid var(--line)}
+@media (prefers-color-scheme:dark){.site.bp,.cal td.s b.bp,.free span.bp{background:#2A352E;color:#D5DDD7}}
+/* ===== 스타벅스 DESIGN.md 참고(2026-11-21): 알약 버튼·그림자 카드·연한 캔버스. 크림색은 안 씀 ===== */
+.card,.kpi,.weekbox{border:0;box-shadow:0 0 .5px rgba(0,0,0,.14),0 1px 2px rgba(0,0,0,.18)}
+.btn,.seg,.seg button,.rg-pre button,.chips button,.date,.rq-btn,.chatbar input,.chatbar button,.st-more,.pb{border-radius:999px}
+.seg{overflow:hidden}
+.search input{border-radius:999px}
+.rq .btn,.btn.primary{background:var(--moss);color:#fff}
+.card-h{border-bottom-color:var(--tint)}
+@media (prefers-color-scheme:dark){.card,.kpi,.weekbox{box-shadow:none;border:1px solid var(--line)}}
+/* ===== 스타벅스 DESIGN.md 본격 적용(2026-11-21): 크림 캔버스·세라믹·초록 제목·알약·눌림 효과 ===== */
+body{background:var(--bg)}
+h1,.card-h h3{color:var(--pine);font-weight:700}
+.card-h h3{font-size:17px}
+.eyebrow{color:var(--moss)}
+nav{background:#FFFFFF}
+.btn,.pb,.rg-pre button,.chips button,.seg button,.chatbar button,.st-more,.kpi,.tab{transition:transform .12s}
+.btn:active,.pb:active,.rg-pre button:active,.chips button:active,.seg button:active,.chatbar button:active,.kpi:active{transform:scale(.95)}
+.pb:not(.on):not(.off){background:#000;color:#fff;border-color:#000}
+.pb:not(.on):not(.off) small{color:#D9D9D9}
+.card.fold>summary:active{background:var(--tint)}
+.weekbox{background:#FFFFFF}
+.day:first-child{background:var(--sage)}
+.search input{background:#FFFFFF}
+.free span,.rq input,.rq select{background:var(--tint)}
+.err{background:var(--ember-bg);color:var(--ember)}
+.bar.h{color:#3F3B32}
+/* 글씨 굵기 3차(2026-11-21): 전체가 흐리다는 지적 → 본문 600, 보조도 600 */
+body{font-weight:600}
+.meta,.sub,.right,.of,.hello,.empty,.st-upd,.legend,.day .dd,.day .r,.mb .mv,.mb .ml,.doc span,.sch .when,.st-line,.rg-row .sub,.kpi span{font-weight:600}
+.who{font-weight:800}
+input,textarea,select{font-weight:600}
+/* 선명도 4차: 글자 크기 +1px, 글자를 흐리게 만드는 transform 효과 제거(윈도우 글자 보정이 꺼지는 원인) */
+body{font-size:16px}
+.meta,.sub,.right,.detail,.pair .meta,.of,.st-line{font-size:14px}
+.card-h h3{font-size:18px}
+.kpi span,.day .dd,.day .r,.tag,.mini,.pill{font-size:12.5px}
+.btn,.pb,.rg-pre button,.chips button,.seg button,.chatbar button,.st-more,.kpi,.tab{transition:none}
+.msg,.item{animation:none!important}
+#c-stay .who,#c-today .who{white-space:normal;overflow:visible;line-height:1.35}
+.recent-line{font-size:15px;font-weight:700;padding:11px 14px}
+.recent-line .sub{font-size:14px;font-weight:600;color:var(--muted)}
+.newtag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.02em;color:#fff;background:var(--moss);border-radius:999px;padding:1px 7px;vertical-align:1px}
+/* ===== DESIGN-starbucks.md 전면 적용 2차(2026-11-21) =====
+   하우스 그린 피처 밴드(머리·받을 돈) / 크림 캔버스 위 흰 카드 / 구분선 대신 여백 / 타이트 자간 / 우하단 원형 Frap 버튼 / 글로벌 내비 3중 그림자 */
+body{letter-spacing:-.01em}
+header.ph{background:#1E3932;border-radius:12px;padding:12px 12px 10px;margin:10px 0 12px}
+header.ph h1,header.ph .eyebrow{color:#fff}
+header.ph .eyebrow{color:rgba(255,255,255,.7)}
+header.ph .kpi{background:rgba(255,255,255,.08);box-shadow:none;border:1px solid rgba(255,255,255,.18)}
+header.ph .kpi b,header.ph .kpi.in b,header.ph .kpi.out b,header.ph .kpi.stay b,header.ph .kpi.kfree b{color:#fff}
+header.ph .kpi span{color:rgba(255,255,255,.78)}
+header.ph .weekbox{box-shadow:none}
+header.ph .plogo{background:#fff;border-radius:50%;padding:2px;mix-blend-mode:normal}
+#c-due{background:#1E3932;color:#fff}
+#c-due .card-h h3{color:#fff}
+#c-due .sub,#c-due .chev{color:rgba(255,255,255,.78)}
+#c-due>summary .tag{background:#fff;color:#C82014;border:0}
+#c-due .card-b{background:#fff;color:var(--ink);border-radius:0 0 12px 12px}
+.card-h{border-bottom:0}
+.pair .item,.pair .item + .item{border-bottom:0}
+.item + .item{border-top:0}
+.sch,.docs .doc,.hit,.recent-line{border-top-color:var(--tint)}
+.grid{gap:16px}
+.pair{gap:16px}
+nav{border-top:0;box-shadow:0 -1px 3px rgba(0,0,0,.1),0 -2px 2px rgba(0,0,0,.06),0 0 2px rgba(0,0,0,.07)}
+#frap{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:6;width:56px;height:56px;border-radius:50%;border:0;background:var(--moss);color:#fff;display:grid;place-items:center;box-shadow:0 0 6px rgba(0,0,0,.24),0 8px 12px rgba(0,0,0,.14);padding:0}
+#frap svg{width:26px;height:26px}
+#frap:active{transform:scale(.95);box-shadow:0 0 6px rgba(0,0,0,.24),0 8px 12px rgba(0,0,0,0)}
+@media (min-width:1000px){#frap{bottom:24px;right:24px}}
+@media (prefers-color-scheme:dark){header.ph{border:1px solid var(--line)}#c-due .card-b{background:var(--surface)}}
+/* 접이식 카드: 제목은 왼쪽, 개수 알약은 오른쪽 끝(화살표 바로 앞)으로 모아 위치를 맞춘다 */
+.card.fold>summary{display:flex;align-items:center;gap:10px}
+.card.fold>summary>div:first-child{flex:1;min-width:0}
+.card.fold>summary .tag{margin-left:auto;flex:0 0 auto;min-width:52px;text-align:center}
+.card.fold>summary .chev{margin-left:0}
+/* 개수 알약을 모든 카드에서 같은 세로줄에: 화살표 없는 카드는 화살표 자리(30px)만큼 오른쪽을 비운다 */
+#c-today>.card-h,#c-stay>.card-h,#c-tmr>.card-h,#c-free>.card-h{padding-right:44px}
+#frap[hidden]{display:none}
 </style>
 </head>
 <body>
+<button id="frap" aria-label="새로고침" title="새로고침"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 4v5h-5"/></svg></button>
 <nav role="tablist">
   <div class="brand"><div class="av"><img id="navlogo" alt=""></div><div><b>캠핑스토리</b><span>가족 운영판</span></div></div>
   <button class="tab" data-v="today" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 20h18M5.5 20 12 6l6.5 14M12 6v14"/></svg>오늘</button>
@@ -368,8 +509,8 @@ mark{background:#FFE9A8}
   <img class="plogo" id="plogo" alt="캠핑스토리">
   <div class="phl"><div class="eyebrow" id="peye">Camping Story</div><h1 id="ptitle"></h1></div>
   <div class="kpis" id="kpis">
-    <button class="kpi in" data-go="c-in"><b id="k-in">-</b><span>입실</span></button>
-    <button class="kpi out" data-go="c-out"><b id="k-out">-</b><span>퇴실</span></button>
+    <button class="kpi in" data-go="c-today"><b id="k-in">-</b><span>입실</span></button>
+    <button class="kpi out" data-go="c-today"><b id="k-out">-</b><span>퇴실</span></button>
     <button class="kpi stay" data-go="c-stay"><b id="k-stay">-</b><span>손님</span></button>
     <button class="kpi kfree" data-go="c-free"><b id="k-free">-</b><span>빈자리</span></button>
   </div>
@@ -383,6 +524,7 @@ mark{background:#FFE9A8}
     <div class="card-b" id="results" hidden style="border-top:1px solid var(--line)"></div>
     <button class="recent-line" id="recent-line" hidden></button>
   </div>
+  <div id="pushbar" hidden></div>
   <div id="today-body"><p class="loading">불러오는 중…</p></div>
   <p class="note"><button class="btn" id="reload">새로고침</button><span id="updated"></span></p>
 </section>
@@ -490,8 +632,12 @@ function bits(b, withPeriod) {
 }
 function short(b) { return [stayLen(b), esc(b.people || '')].filter(Boolean).join(' · ') + (telLink(b) ? '<br>' + telLink(b) : ''); }
 function endOf(b) { var p = String(b.period || '').split('~'); return p[1] ? '~' + esc(p[1]) : ''; }
-function card(id, title, sub, tag, tagCls, body) {
-  return '<div class="card' + (body === '<p class="empty">없어요</p>' ? ' nil' : '') + '" id="' + id + '"><div class="card-h"><div><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span></div><div class="card-b">' + body + '</div></div>';
+function tmrLabel(ymdStr) { var p = String(ymdStr).split('-'); var t = new Date(+p[0], +p[1] - 1, +p[2] + 1); return (t.getMonth() + 1) + '/' + t.getDate() + '(' + '일월화수목금토'[t.getDay()] + ')'; }
+function card(id, title, sub, tag, tagCls, body, fold) {
+  var head = '<div><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><span class="tag ' + (tagCls || '') + '">' + tag + '</span>';
+  // 접이식(fold): 제목 줄을 누르면 펼쳐지고, 오른쪽 화살표(›)로 접고 펼 수 있다는 걸 보여준다
+  if (fold) return '<details class="card fold" id="' + id + '"><summary class="card-h">' + head + '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="card-b">' + body + '</div></details>';
+  return '<div class="card' + (body === '<p class="empty">없어요</p>' ? ' nil' : '') + '" id="' + id + '"><div class="card-h">' + head + '</div><div class="card-b">' + body + '</div></div>';
 }
 var now = new Date();
 var DATE_TXT = (now.getMonth() + 1) + '월 ' + now.getDate() + '일(' + '일월화수목금토'[now.getDay()] + ')';
@@ -504,17 +650,26 @@ function loadToday() {
   BOOKS = [];
   $('today-body').innerHTML = '<p class="loading">불러오는 중…</p>';
   call('apiToday', [], function (d) {
-    var guests = d.checkin.length + d.staying.length;
+    var hereList = d.staying.filter(function (b) { return b.here !== false; });
+    var checkedN = d.staying.filter(function (b) { return b.long && b.here; }).length;  // ✓ 표시가 붙는 팀 수(장박 중 오늘 체크인)
+    var guests = d.checkin.length + hereList.length;
     $('k-in').textContent = d.checkin.length; $('k-out').textContent = d.checkout.length;
     $('k-stay').textContent = guests; $('k-free').textContent = d.freeTonight.length;
     var none = '<p class="empty">없어요</p>';
-    var cIn = card('c-in', '오늘 입실', '오늘 들어오는 손님', d.checkin.length + '팀', 'in',
-      d.checkin.map(function (b) { return item(b, short(b)); }).join('') || none);
-    var cOut = card('c-out', '오늘 퇴실', '오늘 나가는 손님', d.checkout.length + '팀', 'out',
-      d.checkout.map(function (b) { return item(b, short(b)); }).join('') || none);
-    var cStay = card('c-stay', '머무는 중', '먼저 입실해서 오늘도 묵는 손님', d.staying.length + '팀', 'stay',
-      d.staying.map(function (b) { return item(b, short(b), '', '', ' <span class="mini ' + (b.long ? 'p-long">장박 ' : 'p-stay">') + endOf(b) + '</span>'); }).join('') || none);
-    var cTmr = card('c-tmr', '내일', '입실 ' + d.tomorrow.length + '팀 · 퇴실 ' + d.tomorrowOut.length + '팀', '입실 ' + d.tomorrow.length + ' · 퇴실 ' + d.tomorrowOut.length, '',
+    // 오늘 입실·퇴실을 '내일' 카드처럼 한 카드에 합쳐 표시(입실/퇴실 알약으로 구분)
+    var cToday = card('c-today', '오늘 <span class="dt">' + d.label + '</span>', '입실 ' + d.checkin.length + '팀 · 퇴실 ' + d.checkout.length + '팀', '입실 ' + d.checkin.length + ' · 퇴실 ' + d.checkout.length, '',
+      (d.checkin.map(function (b) { return item(b, short(b), '', '', ' <span class="mini p-in">입실</span>'); }).join('') +
+       d.checkout.map(function (b) { return item(b, short(b), '', '', ' <span class="mini p-out">퇴실</span>'); }).join('')) || none);
+    // 장박은 계약 기간 내내 함께 보이되, 오늘 밤 와 있는 팀(태블릿 체크인 기록)에만 '체크인' 표시. 와 있는 팀이 위로.
+    var stayItem = function (b) {
+      var chk = b.long && b.here ? ' <span class="mini p-in" title="오늘 체크인">✓</span>' : '';
+      var lt = b.long ? ' <span class="mini p-long">장박</span>' : '';
+      return item(b, esc(b.period || ''), '', '', chk + lt).replace('class="item"', b.long && !b.here ? 'class="item dim"' : 'class="item"');
+    };
+    var stayAll = d.staying.slice().sort(function (x, y) { return (y.here !== false ? 1 : 0) - (x.here !== false ? 1 : 0); });
+    var cStay = card('c-stay', '머무는 중', '장박 포함 · ✓ 는 오늘 체크인한 팀', d.staying.length + '팀' + (checkedN < d.staying.length ? ' · 체크인 ' + checkedN : ''), 'stay',
+      stayAll.map(stayItem).join('') || none);
+    var cTmr = card('c-tmr', '내일 <span class="dt">' + tmrLabel(d.date) + '</span>', '입실 ' + d.tomorrow.length + '팀 · 퇴실 ' + d.tomorrowOut.length + '팀', '입실 ' + d.tomorrow.length + ' · 퇴실 ' + d.tomorrowOut.length, '',
       (d.tomorrow.map(function (b) { return item(b, short(b), '', '', ' <span class="mini p-in">입실</span>'); }).join('') +
        d.tomorrowOut.map(function (b) { return item(b, short(b), '', '', ' <span class="mini p-out">퇴실</span>'); }).join('')) || none);
     // 받을 돈: 미입금은 결제금액 전체, 장박 '받은/총액' 기록은 남은 금액. 계산 안 되는 기록은 원문 그대로.
@@ -527,7 +682,7 @@ function loadToday() {
           (telLink(b) ? '<br>' + telLink(b) : '');
         return item(b, meta, '<span class="dueR"><span><b class="owe">' + won(b.owe) + '</b>' + (b.got ? ' <span class="of">/ ' + won(b.pay) + '</span>' : '') + '</span>' +
           '<span class="pill p-warn">' + esc(b.paid) + '</span></span>');
-      }).join('')) : '';
+      }).join(''), true) : '';
     // 장박 이용: 계약 박수 중 쓴 박수·남은 박수 (2026-10-05). 누르면 이용 내역·입금이 있는 상세가 열린다.
     var cLong = (d.longs || []).length ? card('c-long', '장박 이용', '쓴 박수 · 남은 박수', d.longs.length + '팀', 'long',
       d.longs.map(function (b) {
@@ -538,14 +693,14 @@ function loadToday() {
         var right = '<span class="dueR"><span><b class="lt' + (b.left === 0 ? ' zero' : '') + '">남은 ' + b.left + '박</b></span>' +
           '<span class="of">쓴 ' + (b.used || 0) + ' / ' + b.usage + '박' + (b.over ? ' · ' + b.over + '박 초과' : '') + '</span></span>';
         return item(b, meta, right);
-      }).join('')) : '';
+      }).join(''), true) : '';
     var cFree = card('c-free', '오늘 빈 사이트', '바로 받을 수 있는 자리', d.freeTonight.length + ' / ' + d.siteCount, '',
       '<div class="free" style="padding:8px">' + (d.freeTonight.map(function (s) { return '<span' + (isBp(s) ? ' class="bp"' : '') + '>' + esc(siteLabel(s)) + '</span>'; }).join('') || '<p class="empty">만석이에요</p>') + heldChips(d.heldTonight) + '</div>');
-    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cIn + cOut + cStay + cTmr + '</div>' + cDue + cLong + cFree + '</div>';
+    $('today-body').innerHTML = '<div class="grid three auto"><div class="pair">' + cToday + cStay + cTmr + '</div>' + cDue + cLong + cFree + '</div>';
     RECENT = d.recent || [];
     var r0 = RECENT[0];
     $('recent-line').hidden = !r0;
-    if (r0) $('recent-line').innerHTML = '🆕 <b>최근 등록</b> · ' + esc(bookedTxt(r0.booked)) + ' ' + esc(siteLabel(r0.site)) + ' ' + esc(r0.name) + (r0.cancelled ? ' (취소)' : '') + ' <span class="sub">외 ' + (RECENT.length - 1) + '건 ›</span>';
+    if (r0) $('recent-line').innerHTML = '<span class="newtag">NEW</span> <b>최근 등록</b> · ' + esc(bookedTxt(r0.booked)) + ' ' + esc(siteLabel(r0.site)) + ' ' + esc(r0.name) + (r0.cancelled ? ' (취소)' : '') + ' <span class="sub">외 ' + (RECENT.length - 1) + '건 ›</span>';
     var t = new Date(); $('updated').textContent = pad(t.getHours()) + ':' + pad(t.getMinutes()) + ' 기준';
     $('navfoot').textContent = '마지막 새로고침 ' + pad(t.getHours()) + ':' + pad(t.getMinutes());
   }, function (e) { errBox($('today-body'), e); });
@@ -1043,6 +1198,7 @@ function show(v, fromBack) {
   if (!fromBack && v !== CUR) history.pushState({ v: v }, '');
   CUR = v;
   views.forEach(function (x) { $('v-' + x).hidden = x !== v; });
+  var fr = $('frap'); if (fr) fr.hidden = (v === 'ask');  // 물어보기에선 보내기 버튼을 가리므로 숨김
   $('ptitle').textContent = v === 'today' ? DATE_TXT : TITLES[v]; $('peye').hidden = v === 'today'; $('week').hidden = $('kpis').hidden = v !== 'today';
   document.querySelectorAll('nav .tab').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.v === v); });
   scrollTo(0, 0);
@@ -1061,6 +1217,38 @@ window.addEventListener('popstate', function (e) {
 });
 show('today', true); loadToday();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
+/* 체크인 푸시 알림(OneSignal). 알림은 서버가 보내고, 여기선 '이 폰에서 받기'만 켠다. 앱 주소(공식 주소)에서만 동작. */
+var OS_APP_ID = 'ce36a80b-59ac-4289-b381-a23034236e8e', OSX = null;
+var BELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
+function pushBar() {
+  var el = $('pushbar'); if (!el) return;
+  if (!OSX) { el.hidden = true; return; }
+  var supported = true, perm = '', on = false;
+  try { supported = OSX.Notifications.isPushSupported(); perm = OSX.Notifications.permission ? 'granted' : (Notification.permission || ''); on = !!OSX.User.PushSubscription.optedIn; } catch (e) { supported = false; }
+  if (!supported) { el.hidden = true; return; }
+  el.hidden = false;
+  if (on) el.innerHTML = '<button class="pb on" id="pb">' + BELL + '<span>체크인 알림 켜짐</span><small>누르면 끄기</small></button>';
+  else if (perm === 'denied' || (window.Notification && Notification.permission === 'denied')) el.innerHTML = '<div class="pb off">' + BELL + '<span>알림이 막혀 있어요. 브라우저 설정에서 알림을 허용해 주세요</span></div>';
+  else el.innerHTML = '<button class="pb" id="pb">' + BELL + '<span>체크인 알림 받기</span><small>손님이 태블릿 체크인하면 알려드려요</small></button>';
+  var b = $('pb'); if (b) b.onclick = function () {
+    try {
+      if (on) OSX.User.PushSubscription.optOut();
+      else OSX.Notifications.requestPermission().then(function () { return OSX.User.PushSubscription.optIn(); }).then(pushBar);
+    } catch (e) { }
+    setTimeout(pushBar, 600);
+  };
+}
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+window.OneSignalDeferred.push(function (OneSignal) {
+  try {
+    return OneSignal.init({ appId: OS_APP_ID, serviceWorkerPath: 'campingstory-app/sw.js', serviceWorkerParam: { scope: '/campingstory-app/' }, notifyButton: { enable: false }, allowLocalhostAsSecureOrigin: false })
+      .then(function () { OSX = OneSignal; try { OneSignal.User.PushSubscription.addEventListener('change', pushBar); } catch (e) { } pushBar(); })
+      .catch(function () { });
+  } catch (e) { }
+});
+
+
+var _fr = document.getElementById('frap'); if (_fr) _fr.addEventListener('click', function () { var r = document.getElementById('reload'); if (r && r.offsetParent) r.click(); else location.reload(); });
 </script>
 </body>
 </html>
